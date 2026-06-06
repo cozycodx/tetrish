@@ -46,9 +46,9 @@
 
   #gameScreen{width:100%;height:100%;display:none;flex-direction:column;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);gap:8px}
   #gameScreen.active{display:flex}
-  header{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:54px}
+  header{display:grid;grid-template-columns:1fr auto 54px;align-items:center;gap:8px;min-height:54px}
   .brand{font-weight:900;letter-spacing:.08em;font-size:16px}
-  .pill{border:1px solid var(--line);background:#111429cc;border-radius:16px;padding:7px 10px;font-size:12px;color:var(--muted)}
+  .topStats{display:flex;gap:8px;justify-content:center}.pill{border:1px solid var(--line);background:#111429cc;border-radius:16px;padding:7px 10px;font-size:12px;color:var(--muted)}
   .pill b{display:block;color:var(--text);font-size:16px;line-height:1.1}
   main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 78px;gap:8px}
   #boardWrap{position:relative;border:1px solid #293052;border-radius:18px;background:#050711cc;box-shadow:0 14px 40px #0006;overflow:hidden}
@@ -65,12 +65,13 @@
   .ctrl{height:58px;border-radius:18px;border:1px solid var(--line);background:#141832cc;color:#fff;font-weight:900;font-size:16px;display:grid;place-items:center;box-shadow:0 8px 24px #0004;user-select:none}
   .ctrl:active{transform:translateY(1px);background:#222957}
   #holdBtn{font-size:16px}
+  .topMenuBtn{width:54px;height:54px;padding:0;border-radius:16px;background:#141832cc;border:1px solid var(--line);font-size:28px;line-height:1;display:grid;place-items:center;box-shadow:0 8px 24px #0004}
   #boardWrap.shake{animation:shake .14s linear 1}
   @keyframes shake{25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
 
   @media (max-height: 700px){
     .heroTitle{font-size:46px}.panel{padding:18px 16px}.hint{margin-top:10px}
-    #gameScreen{gap:6px}header{min-height:48px}.ctrl{height:52px}#controls{padding-bottom:4px}
+    #gameScreen{gap:6px}header{min-height:48px;grid-template-columns:1fr auto 48px}.topMenuBtn{width:48px;height:48px}.ctrl{height:52px}#controls{padding-bottom:4px}
     aside{gap:6px}.box{min-height:64px;padding:5px}.mini{width:58px;height:44px}
     #qrBox{width:92px;height:92px}#qrBox img{width:80px;height:80px}
   }
@@ -138,7 +139,7 @@
           <button id="startMatchBtn" class="secondaryBtn" style="display:none">START</button>
         </div>
         <button id="leaveRoomBtn" class="dangerBtn" style="margin-top:8px;width:100%">LEAVE</button>
-        <div id="countdown"></div>
+        <div id="lobbyStatus" class="hint" style="margin-top:8px"></div><div id="countdown"></div>
       </div>
     </div>
   </section>
@@ -146,9 +147,11 @@
   <section id="gameScreen">
     <header>
       <div class="brand">TETRISH <span id="playerName" style="font-size:12px;opacity:.8"></span></div>
-      <div class="pill">SCORE <b id="score">0</b></div>
-      <div class="pill">LVL <b id="level">1</b></div>
-      <div class="pill">LINES <b id="lines">0</b></div>
+      <div class="topStats">
+        <div class="pill">SCORE <b id="score">0</b></div>
+        <div class="pill">LINES <b id="lines">0</b></div>
+      </div>
+      <button id="topMenuBtn" class="topMenuBtn" aria-label="Menu">☰</button>
     </header>
 
     <main>
@@ -158,8 +161,8 @@
           <div>
             <h1>TOP OUT</h1>
             <p id="gameOverText"></p><p id="matchText" style="color:#34d399;font-weight:900"></p>
-            <button id="restartBtn">RESTART</button>
-            <button id="quitBtn" class="secondaryBtn" style="margin-top:10px">MENU</button>
+            <button id="continueBtn" style="display:none">CONTINUE</button>
+            <button id="quitBtn" class="secondaryBtn" style="margin-top:10px">QUIT</button>
           </div>
         </div>
       </div>
@@ -221,7 +224,7 @@
   const canvas=document.getElementById('board'), ctx=canvas.getContext('2d');
   const ncv=document.getElementById('next'), nctx=ncv.getContext('2d');
   const hcv=document.getElementById('hold'), hctx=hcv.getContext('2d');
-  const scoreEl=score, levelEl=level, linesEl=lines, apmEl=apm, bestEl=best;
+  const scoreEl=score, linesEl=lines, apmEl=apm, bestEl=best;
   const gameOverlay=document.getElementById('gameOverlay');
 
   const colors={I:'#22d3ee',O:'#facc15',T:'#a78bfa',S:'#34d399',Z:'#fb7185',J:'#60a5fa',L:'#fb923c',G:'#64748b'};
@@ -239,7 +242,7 @@
   let last=0, drop=0, running=false, moves=0, startTime=0, cell=20, ox=0, oy=0; let effects=[], comboVal=0, b2bVal=0;
   let player='Guest';
 
-  let roomId='', playerId='', playerSlot='', roomUnsub=null, roomStarted=false, isMultiplayer=false, matchEnded=false, garbageQueue=0, lastIncomingGarbage=0, lastOpponentLost=false;
+  let roomId='', playerId='', playerSlot='', roomUnsub=null, roomStarted=false, isMultiplayer=false, matchEnded=false, garbageQueue=0, lastIncomingGarbage=0, lastOpponentLost=false, paused=false, currentRoom=null, startLocked=false;
 
   bestEl.textContent=bestVal;
 
@@ -272,7 +275,7 @@
 
   function reset(){
     show(gameScreen);
-    gameOverlay.classList.remove('active'); matchText.textContent=''; matchEnded=false; garbageQueue=0; lastIncomingGarbage=0; lastOpponentLost=false;
+    gameOverlay.classList.remove('active'); matchText.textContent=''; paused=false; matchEnded=false; garbageQueue=0; lastIncomingGarbage=0; lastOpponentLost=false; continueBtn.style.display='none'; quitBtn.textContent='QUIT';
     grid=Array.from({length:H},()=>Array(W).fill(0));
     bag=[]; q=[]; holdPiece=null; held=false; scoreVal=0; linesVal=0; levelVal=1; comboVal=0; b2bVal=0; moves=0; startTime=performance.now();
     while(q.length<5) q.push(take());
@@ -332,16 +335,16 @@
     } else comboVal=0;
   }
   function lock(){merge(); clearLines(); if(garbageQueue>0){addGarbageLines(garbageQueue); garbageQueue=0;} spawn(); updateUI()}
-  function move(dx){ if(!running)return; if(!hit(cur.x+dx,cur.y,cur.m)){cur.x+=dx;moves++;draw()} }
-  function soft(){ if(!running)return; if(!hit(cur.x,cur.y+1,cur.m)){cur.y++;scoreVal++;moves++} else lock(); updateUI();draw() }
-  function hard(){ if(!running)return; let d=0; while(!hit(cur.x,cur.y+1,cur.m)){cur.y++;d++}
+  function move(dx){ if(!running||paused)return; if(!hit(cur.x+dx,cur.y,cur.m)){cur.x+=dx;moves++;draw()} }
+  function soft(){ if(!running||paused)return; if(!hit(cur.x,cur.y+1,cur.m)){cur.y++;scoreVal++;moves++} else lock(); updateUI();draw() }
+  function hard(){ if(!running||paused)return; let d=0; while(!hit(cur.x,cur.y+1,cur.m)){cur.y++;d++}
     effects.push({type:'burst',x:cur.x+2,y:cur.y,life:20});
     for(let i=0;i<22;i++) effects.push({type:'particle',x:cur.x+Math.random()*4,y:cur.y+Math.random()*2,vx:(Math.random()-.5)*.25,vy:-Math.random()*.35,life:18+Math.random()*14,t:cur.t});
     const bw=document.getElementById('boardWrap'); bw.classList.remove('shake'); void bw.offsetWidth; bw.classList.add('shake');
     scoreVal+=d*2;moves++;lock();draw() }
-  function rotate(){ if(!running)return; const m=rot(cur.m); for(const k of [0,-1,1,-2,2]) if(!hit(cur.x+k,cur.y,m)){cur.x+=k;cur.m=m;moves++;draw();return} }
+  function rotate(){ if(!running||paused)return; const m=rot(cur.m); for(const k of [0,-1,1,-2,2]) if(!hit(cur.x+k,cur.y,m)){cur.x+=k;cur.m=m;moves++;draw();return} }
   function hold(){
-    if(!running||held)return;
+    if(!running||paused||held)return;
     const t=cur.t; if(holdPiece){cur={t:holdPiece,m:clone(shapes[holdPiece]),x:3,y:0}; holdPiece=t} else {holdPiece=t; spawn()}
     held=true; moves++; drawMini(hctx,holdPiece); draw();
   }
@@ -351,6 +354,7 @@
     if(isMultiplayer && roomId && playerSlot){ await update(ref(db,'rooms/'+roomId),{status:'finished', loser:playerSlot, winner:playerSlot==='p1'?'p2':'p1'}); }
     bestVal=Math.max(bestVal,scoreVal); localStorage.neonStackBest=bestVal;
     gameOverText.textContent='Score '+scoreVal+' · Lines '+linesVal+'.';
+    continueBtn.style.display='none'; quitBtn.textContent=isMultiplayer?'ROOM':'MENU';
     gameOverlay.classList.add('active');
     updateUI();
   }
@@ -361,11 +365,12 @@
     running=false;
     gameOverText.textContent=won ? 'Opponent topped out.' : 'You topped out.';
     matchText.textContent=won ? 'YOU WIN' : 'YOU LOSE';
+    continueBtn.style.display='none'; quitBtn.textContent=isMultiplayer?'ROOM':'MENU';
     gameOverlay.classList.add('active');
   }
 
   function updateUI(){
-    scoreEl.textContent=scoreVal; levelEl.textContent=levelVal; linesEl.textContent=linesVal; bestEl.textContent=bestVal;
+    scoreEl.textContent=scoreVal; linesEl.textContent=linesVal; bestEl.textContent=bestVal;
     apmEl.textContent=Math.round(moves/Math.max(1,(performance.now()-startTime)/60000)); combo.textContent=comboVal; b2b.textContent=b2bVal;
     drawMini(nctx,q[0]); drawMini(hctx,holdPiece);
     if(isMultiplayer && roomId && playerSlot && running){ update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{score:scoreVal,lines:linesVal,combo:comboVal}).catch(()=>{}); }
@@ -413,14 +418,47 @@
     m.forEach((r,dy)=>r.forEach((v,dx)=>v&&drawCell(t,x+dx*s,y+dy*s,s,c)));
   }
   function loop(t){
-    if(running){ drop+=t-last; if(drop>Math.max(90,720-(levelVal-1)*55)){soft();drop=0} draw(); updateUI() }
+    if(running && !paused){ drop+=t-last; if(drop>Math.max(90,720-(levelVal-1)*55)){soft();drop=0} draw(); updateUI() }
     last=t; requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
 
   onePlayerBtn.onclick=()=>{ getName(); isMultiplayer=false; reset(); };
-  restartBtn.onclick=()=>{ if(isMultiplayer){ show(menuScreen); } else reset(); };
-  quitBtn.onclick=()=>{ running=false; show(menuScreen); };
+  continueBtn.onclick=()=>{ paused=false; gameOverlay.classList.remove('active'); };
+  quitBtn.onclick=()=>{
+    if(isMultiplayer){
+      running=false;
+      matchEnded=false;
+      if(playerSlot==='p1' && roomId){
+        update(ref(db,'rooms/'+roomId),{
+          status:'waiting',
+          startAt:0,
+          winner:null,
+          loser:null,
+          attacks:null,
+          'players/p1/ready':false,
+          'players/p2/ready':false,
+          'players/p1/alive':true,
+          'players/p2/alive':true
+        });
+      }
+      roomStarted=false; countdown.textContent=''; showRoomPanel();
+      show(multiScreen);
+    }else{
+      running=false;
+      paused=false;
+      show(menuScreen);
+    }
+  };
+  topMenuBtn.onclick=()=>{
+    if(!running) return;
+    paused=true;
+    gameOverText.textContent=isMultiplayer?'Leave this match?':'Quit this game?';
+    matchText.textContent='';
+    continueBtn.style.display='block';
+    quitBtn.textContent=isMultiplayer?'ROOM':'QUIT';
+    gameOverlay.classList.add('active');
+  };
 
   document.querySelectorAll('.ctrl').forEach(b=>{
     b.addEventListener('touchstart',e=>{e.preventDefault(); act(b.dataset.act)}, {passive:false});
@@ -468,7 +506,7 @@
   showJoinBtn.onclick=()=>{ multiMenu.style.display='none'; joinPanel.style.display='block'; };
   cancelJoinBtn.onclick=()=>{ joinPanel.style.display='none'; multiMenu.style.display='grid'; };
   createRoomBtn.onclick=createRoom;
-  joinRoomBtn.onclick=()=>joinRoom(roomInput.value.trim().toUpperCase());
+  joinRoomBtn.onclick=()=>joinRoom(roomInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g,''));
   copyRoomBtn.onclick=()=>navigator.clipboard?.writeText(roomLink.textContent);
   leaveRoomBtn.onclick=leaveRoom;
   readyBtn.onclick=toggleReady;
@@ -491,14 +529,15 @@
     multiMenu.style.display='grid';
     joinPanel.style.display='none';
     roomPanel.style.display='none';
-    countdown.textContent='';
-    if(window.startMatchBtn) startMatchBtn.style.display='none';
+    countdown.textContent=''; lobbyStatus.textContent=''; startLocked=false;
+    if(window.startMatchBtn){ startMatchBtn.style.display='none'; startMatchBtn.disabled=false; }
     show(multiScreen);
     const incoming=new URL(location.href).searchParams.get('room');
     if(incoming && firebaseReady) joinRoom(incoming.toUpperCase());
   }
   async function createRoom(){
     if(!firebaseReady){ showFirebaseWarning(); return; }
+    createRoomBtn.disabled=true; lobbyStatus.textContent='Creating room...';
     isMultiplayer=true;
     roomId=makeRoomId();
     playerId=makePlayerId();
@@ -508,27 +547,63 @@
       createdAt: serverTimestamp(),
       status:'waiting',
       startAt:0,
+      winner:null,
+      loser:null,
+      attacks:null,
       players:{
-        [playerSlot]:{id:playerId,name:player,ready:false,online:true,alive:true,score:0,lines:0,combo:0}
+        [playerSlot]:{id:playerId,name:player,ready:false,online:true,alive:true,score:0,lines:0,combo:0,lastSeen:Date.now()}
       }
     });
     onDisconnect(ref(db,'rooms/'+roomId+'/players/'+playerSlot)).remove();
     showRoomPanel();
     listenRoom();
+    createRoomBtn.disabled=false;
   }
   async function joinRoom(id){
     if(!firebaseReady){ showFirebaseWarning(); return; }
-    if(!id) return;
+    if(!id){
+      lobbyStatus.textContent='Enter a room code first.';
+      return;
+    }
+    joinRoomBtn.disabled=true;
+    lobbyStatus.textContent='Checking room...';
+
+    const snap = await get(ref(db,'rooms/'+id));
+    const room = snap.val();
+
+    if(!room){
+      lobbyStatus.textContent='Room not found.';
+      joinRoomBtn.disabled=false;
+      return;
+    }
+
+    if(room.status && room.status !== 'waiting'){
+      lobbyStatus.textContent='This room already started or finished.';
+      joinRoomBtn.disabled=false;
+      return;
+    }
+
+    const p1 = room.players?.p1;
+    const p2 = room.players?.p2;
+
+    if(p1 && p2){
+      lobbyStatus.textContent='Room is full.';
+      joinRoomBtn.disabled=false;
+      return;
+    }
+
     isMultiplayer=true;
     roomId=id;
     playerId=makePlayerId();
-    playerSlot='p2';
+    playerSlot = p1 ? 'p2' : 'p1';
+
     await update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{
-      id:playerId,name:player,ready:false,online:true,alive:true,score:0,lines:0,combo:0
+      id:playerId,name:player,ready:false,online:true,alive:true,score:0,lines:0,combo:0,lastSeen:Date.now()
     });
     onDisconnect(ref(db,'rooms/'+roomId+'/players/'+playerSlot)).remove();
     showRoomPanel();
     listenRoom();
+    joinRoomBtn.disabled=false;
   }
   function showRoomPanel(){
     multiMenu.style.display='none';
@@ -539,6 +614,7 @@
     roomLink.textContent=link;
     qr(qrBox, link);
     readyBtn.textContent='READY';
+    startLocked=false; lobbyStatus.textContent='';
     if(window.startMatchBtn) startMatchBtn.style.display = playerSlot==='p1' ? 'block' : 'none';
   }
   function listenRoom(){
@@ -577,31 +653,48 @@
   }
   async function startMatch(){
     if(!roomId || playerSlot!=='p1') return;
+    if(startLocked) return;
 
     const snap = await get(ref(db,'rooms/'+roomId));
     const room = snap.val();
     const p1 = room?.players?.p1;
     const p2 = room?.players?.p2;
 
+    if(room?.status === 'starting'){
+      lobbyStatus.textContent='Game is already starting.';
+      return;
+    }
+
     if(!p1 || !p2){
+      lobbyStatus.textContent='Waiting for player 2.';
       alert('Waiting for player 2.');
       return;
     }
 
     if(!p1.ready || !p2.ready){
+      lobbyStatus.textContent='Both players must be ready before the host can start.';
       alert('Both players must be ready before the host can start.');
       return;
     }
 
+    startLocked=true;
+    startMatchBtn.disabled=true;
+    lobbyStatus.textContent='Starting match...';
     roomStarted=false;
+
     await update(ref(db,'rooms/'+roomId),{
       status:'starting',
-      startAt:Date.now()+3000
+      startAt:Date.now()+4000,
+      winner:null,
+      loser:null,
+      attacks:null
     });
   }
 
   async function toggleReady(){
     if(!roomId || !playerSlot) return;
+    if(currentRoom?.status==='starting'){ lobbyStatus.textContent='Game is already starting.'; return; }
+    if(currentRoom?.status==='finished'){ lobbyStatus.textContent='Match finished. Return to room first.'; return; }
     const current = readyBtn.textContent !== 'UNREADY';
     readyBtn.textContent=current?'UNREADY':'READY';
     await update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{ready:current});
@@ -609,20 +702,25 @@
   function firebaseCountdown(startAt){
     const tick=()=>{
       const ms=startAt-Date.now();
-      const n=Math.ceil(ms/1000);
+      const n=Math.min(3, Math.ceil(ms/1000));
       countdown.textContent=n>0?n:'GO!';
       if(ms<=0){
-        setTimeout(()=>{ isMultiplayer=true; reset(); },250);
+        setTimeout(()=>{ isMultiplayer=true; reset(); },120);
       }else requestAnimationFrame(tick);
     };
     tick();
   }
   async function leaveRoom(){
     if(roomUnsub){ roomUnsub(); roomUnsub=null; }
-    if(roomId && playerSlot) await remove(ref(db,'rooms/'+roomId+'/players/'+playerSlot));
+    if(roomId && playerSlot==='p1') await remove(ref(db,'rooms/'+roomId));
+    else if(roomId && playerSlot) await remove(ref(db,'rooms/'+roomId+'/players/'+playerSlot));
     roomId=''; playerSlot=''; roomStarted=false; isMultiplayer=false; matchEnded=false; garbageQueue=0;
     openMulti();
   }
+
+  roomInput.addEventListener('input',()=>{
+    roomInput.value=roomInput.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  });
 
   const incomingRoom=new URL(location.href).searchParams.get('room');
   if(incomingRoom){
