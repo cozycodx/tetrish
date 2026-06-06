@@ -219,11 +219,11 @@
     min-height:auto;
     height:auto;
     padding:6px;
-    gap:2px;
+    gap:4px;
   }
   #gameScreen.multiplayerGame .nextBox .mini{
     width:72px;
-    height:34px;
+    height:46px;
   }
   #gameScreen.multiplayerGame .opponentBox{
     display:flex !important;
@@ -237,18 +237,18 @@
   }
   #gameScreen.multiplayerGame .garbageMeter{
     flex:1;
-    min-height:54px;
-    max-height:130px;
+    min-height:44px;
+    max-height:112px;
   }
   @media (max-height: 700px){
     #gameScreen.multiplayerGame main{grid-template-columns:1fr 82px}
-    #gameScreen.multiplayerGame .nextBox .mini{width:62px;height:28px}
+    #gameScreen.multiplayerGame .nextBox .mini{width:62px;height:38px}
     #gameScreen.multiplayerGame .opponentBox{font-size:10px;padding:5px}
     #gameScreen.multiplayerGame .garbageMeter{min-height:42px;max-height:90px}
   }
   @media (min-width: 760px) and (max-width: 1179px){
     #gameScreen.multiplayerGame main{grid-template-columns:minmax(0,1fr) 96px}
-    #gameScreen.multiplayerGame .nextBox .mini{width:78px;height:34px}
+    #gameScreen.multiplayerGame .nextBox .mini{width:78px;height:48px}
     #gameScreen.multiplayerGame .garbageMeter{min-height:70px;max-height:150px}
   }
 
@@ -511,7 +511,12 @@
     ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
     cell=Math.floor(Math.min((r.width-18)/W, (r.height-18)/VISIBLE));
     ox=Math.floor((r.width-cell*W)/2); oy=Math.floor((r.height-cell*VISIBLE)/2);
-    [ncv,n2cv,n3cv,n4cv].forEach(c=>{c.width=70*devicePixelRatio;c.height=58*devicePixelRatio;c.getContext('2d').setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)});
+    [ncv,n2cv,n3cv,n4cv].forEach(c=>{
+      const rr=c.getBoundingClientRect();
+      c.width=Math.max(1,Math.floor(rr.width*devicePixelRatio));
+      c.height=Math.max(1,Math.floor(rr.height*devicePixelRatio));
+      c.getContext('2d').setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    });
     draw();
   }
   addEventListener('resize',resize);
@@ -770,8 +775,18 @@
     });
   }
   function drawMini(c,t){
-    c.clearRect(0,0,70,58); if(!t)return;
-    const m=shapes[t], s=14, w=m[0].length*s, h=m.length*s, x=(70-w)/2, y=(58-h)/2;
+    const canvasEl=c.canvas;
+    const rr=canvasEl.getBoundingClientRect();
+    const wBox=rr.width || 70;
+    const hBox=rr.height || 58;
+    c.clearRect(0,0,wBox,hBox);
+    if(!t)return;
+    const m=shapes[t];
+    const cols=m[0].length;
+    const rows=m.length;
+    const s=Math.floor(Math.min((wBox-8)/cols,(hBox-8)/rows,14));
+    const w=cols*s, h=rows*s;
+    const x=(wBox-w)/2, y=(hBox-h)/2;
     m.forEach((r,dy)=>r.forEach((v,dx)=>v&&drawCell(t,x+dx*s,y+dy*s,s,c)));
   }
   function loop(t){
