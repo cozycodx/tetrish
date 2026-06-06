@@ -135,8 +135,9 @@
 
         <div class="twoBtns">
           <button id="readyBtn">READY</button>
-          <button id="startMatchBtn" class="secondaryBtn">START</button></div><div class="twoBtns" style="margin-top:8px"><button id="leaveRoomBtn" class="dangerBtn">LEAVE</button>
+          <button id="startMatchBtn" class="secondaryBtn" style="display:none">START</button>
         </div>
+        <button id="leaveRoomBtn" class="dangerBtn" style="margin-top:8px;width:100%">LEAVE</button>
         <div id="countdown"></div>
       </div>
     </div>
@@ -470,15 +471,8 @@
   joinRoomBtn.onclick=()=>joinRoom(roomInput.value.trim().toUpperCase());
   copyRoomBtn.onclick=()=>navigator.clipboard?.writeText(roomLink.textContent);
   leaveRoomBtn.onclick=leaveRoom;
-  startMatchBtn.onclick=async ()=>{
-    if(playerSlot!=='p1') return;
-    if(!roomId) return;
-    await update(ref(db,'rooms/'+roomId),{
-      status:'starting',
-      startAt:Date.now()+3000
-    });
-  };
   readyBtn.onclick=toggleReady;
+  startMatchBtn.onclick=startMatch;
 
   function makeRoomId(){
     return Math.random().toString(36).slice(2,8).toUpperCase();
@@ -498,6 +492,7 @@
     joinPanel.style.display='none';
     roomPanel.style.display='none';
     countdown.textContent='';
+    if(window.startMatchBtn) startMatchBtn.style.display='none';
     show(multiScreen);
     const incoming=new URL(location.href).searchParams.get('room');
     if(incoming && firebaseReady) joinRoom(incoming.toUpperCase());
@@ -514,12 +509,11 @@
       status:'waiting',
       startAt:0,
       players:{
-        [playerSlot]:{id:playerId,name:player,ready:false,online:true,alive:true,score:0,lines:0,combo:0,alive:true,score:0,lines:0,combo:0}
+        [playerSlot]:{id:playerId,name:player,ready:false,online:true,alive:true,score:0,lines:0,combo:0}
       }
     });
     onDisconnect(ref(db,'rooms/'+roomId+'/players/'+playerSlot)).remove();
     showRoomPanel();
-    if(window.startMatchBtn) startMatchBtn.style.display = (playerSlot==='p1' ? 'block' : 'none');
     listenRoom();
   }
   async function joinRoom(id){
@@ -534,7 +528,6 @@
     });
     onDisconnect(ref(db,'rooms/'+roomId+'/players/'+playerSlot)).remove();
     showRoomPanel();
-    if(window.startMatchBtn) startMatchBtn.style.display = (playerSlot==='p1' ? 'block' : 'none');
     listenRoom();
   }
   function showRoomPanel(){
@@ -546,6 +539,7 @@
     roomLink.textContent=link;
     qr(qrBox, link);
     readyBtn.textContent='READY';
+    if(window.startMatchBtn) startMatchBtn.style.display = playerSlot==='p1' ? 'block' : 'none';
   }
   function listenRoom(){
     if(roomUnsub) roomUnsub();
@@ -560,8 +554,6 @@
       p1Ready.className=p1?.ready?'ready':'notReady';
       p2Ready.textContent=p2?.ready?'READY':'NOT READY';
       p2Ready.className=p2?.ready?'ready':'notReady';
-
-
 
       const attacks = room.attacks?.[playerSlot] || {};
       const attackIds = Object.keys(attacks);
@@ -583,6 +575,28 @@
       }
     });
   }
+  async function startMatch(){
+    if(!roomId || playerSlot!=='p1') return;
+    const roomSnap = await new Promise(resolve => {
+      const off = onValue(ref(db,'rooms/'+roomId), snap => { off(); resolve(snap); }, {onlyOnce:true});
+    });
+    const room = roomSnap.val();
+    const p1 = room?.players?.p1;
+    const p2 = room?.players?.p2;
+    if(!p1 || !p2){
+      alert('Waiting for player 2.');
+      return;
+    }
+    if(!p1.ready || !p2.ready){
+      alert('Both players must be ready before the host can start.');
+      return;
+    }
+    await update(ref(db,'rooms/'+roomId),{
+      status:'starting',
+      startAt:Date.now()+3000
+    });
+  }
+
   async function toggleReady(){
     if(!roomId || !playerSlot) return;
     const current = readyBtn.textContent !== 'UNREADY';
