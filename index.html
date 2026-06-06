@@ -203,7 +203,7 @@
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
   import {
-    getDatabase, ref, set, update, onValue, remove, onDisconnect, serverTimestamp
+    getDatabase, ref, set, update, onValue, get, remove, onDisconnect, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
   const firebaseReady = !firebaseConfig.apiKey.includes("PASTE_");
@@ -577,20 +577,23 @@
   }
   async function startMatch(){
     if(!roomId || playerSlot!=='p1') return;
-    const roomSnap = await new Promise(resolve => {
-      const off = onValue(ref(db,'rooms/'+roomId), snap => { off(); resolve(snap); }, {onlyOnce:true});
-    });
-    const room = roomSnap.val();
+
+    const snap = await get(ref(db,'rooms/'+roomId));
+    const room = snap.val();
     const p1 = room?.players?.p1;
     const p2 = room?.players?.p2;
+
     if(!p1 || !p2){
       alert('Waiting for player 2.');
       return;
     }
+
     if(!p1.ready || !p2.ready){
       alert('Both players must be ready before the host can start.');
       return;
     }
+
+    roomStarted=false;
     await update(ref(db,'rooms/'+roomId),{
       status:'starting',
       startAt:Date.now()+3000
