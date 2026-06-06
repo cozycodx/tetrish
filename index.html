@@ -214,6 +214,20 @@
   if(firebaseReady){
     const app = initializeApp(firebaseConfig);
     db = getDatabase(app);
+    onValue(ref(db,'.info/serverTimeOffset'), snap => {
+      serverOffset = snap.val() || 0;
+    });
+  }
+
+  function serverNow(){
+    return Date.now() + serverOffset;
+  }
+
+  function clearRoomUrl(){
+    if(location.search.includes('room=')){
+      history.replaceState({}, '', location.origin + location.pathname);
+    }
+    pendingRoom='';
   }
 
   const W=10,H=20, VISIBLE=20;
@@ -242,7 +256,7 @@
   let last=0, drop=0, running=false, moves=0, startTime=0, cell=20, ox=0, oy=0; let effects=[], comboVal=0, b2bVal=0;
   let player='Guest';
 
-  let roomId='', playerId='', playerSlot='', roomUnsub=null, roomStarted=false, isMultiplayer=false, matchEnded=false, garbageQueue=0, lastIncomingGarbage=0, lastOpponentLost=false, paused=false, currentRoom=null, startLocked=false;
+  let roomId='', playerId='', playerSlot='', roomUnsub=null, roomStarted=false, isMultiplayer=false, matchEnded=false, garbageQueue=0, lastIncomingGarbage=0, lastOpponentLost=false, paused=false, currentRoom=null, startLocked=false, serverOffset=0, pendingRoom='';
 
   bestEl.textContent=bestVal;
 
@@ -442,7 +456,10 @@
           'players/p2/alive':true
         });
       }
-      roomStarted=false; countdown.textContent=''; showRoomPanel();
+      roomStarted=false; startLocked=false; countdown.textContent=''; lobbyStatus.textContent='';
+      readyBtn.textContent='READY';
+      if(window.startMatchBtn){ startMatchBtn.disabled=false; }
+      showRoomPanel();
       show(multiScreen);
     }else{
       running=false;
@@ -502,7 +519,7 @@
 
   // Firebase multiplayer
   multiBtn.onclick=()=>{ getName(); openMulti(); };
-  backFromMultiBtn.onclick=()=>show(menuScreen);
+  backFromMultiBtn.onclick=()=>{ clearRoomUrl(); show(menuScreen); };
   showJoinBtn.onclick=()=>{ multiMenu.style.display='none'; joinPanel.style.display='block'; };
   cancelJoinBtn.onclick=()=>{ joinPanel.style.display='none'; multiMenu.style.display='grid'; };
   createRoomBtn.onclick=createRoom;
@@ -524,16 +541,37 @@
   function qr(el, data){
     el.innerHTML='<img alt="Room QR" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encodeURIComponent(data)+'">';
   }
+  function resetToMultiMenu(message=''){
+    if(roomUnsub){ roomUnsub(); roomUnsub=null; }
+    running=false; paused=false; roomId=''; playerSlot=''; playerId=''; roomStarted=false; isMultiplayer=false; matchEnded=false; garbageQueue=0; currentRoom=null; startLocked=false;
+    countdown.textContent='';
+    clearRoomUrl();
+    multiBtn.textContent='MULTIPLAYER';
+    multiMenu.style.display='grid';
+    joinPanel.style.display='none';
+    roomPanel.style.display='none';
+    readyBtn.textContent='READY';
+    if(window.startMatchBtn){ startMatchBtn.style.display='none'; startMatchBtn.disabled=false; }
+    show(multiScreen);
+    lobbyStatus.textContent=message;
+  }
+
   function openMulti(){
     showFirebaseWarning();
+    multiBtn.textContent='MULTIPLAYER';
     multiMenu.style.display='grid';
     joinPanel.style.display='none';
     roomPanel.style.display='none';
     countdown.textContent=''; lobbyStatus.textContent=''; startLocked=false;
     if(window.startMatchBtn){ startMatchBtn.style.display='none'; startMatchBtn.disabled=false; }
     show(multiScreen);
-    const incoming=new URL(location.href).searchParams.get('room');
-    if(incoming && firebaseReady) joinRoom(incoming.toUpperCase());
+
+    if(pendingRoom && firebaseReady){
+      const joinId = pendingRoom.toUpperCase().replace(/[^A-Z0-9]/g,'');
+      pendingRoom='';
+      roomInput.value=joinId;
+      joinRoom(joinId);
+    }
   }
   async function createRoom(){
     if(!firebaseReady){ showFirebaseWarning(); return; }
@@ -621,7 +659,11 @@
     if(roomUnsub) roomUnsub();
     roomUnsub=onValue(ref(db,'rooms/'+roomId), snap=>{
       const room=snap.val();
-      if(!room) return;
+      currentRoom=room;
+      if(!room){
+        resetToMultiMenu('Host left. Room closed.');
+        return;
+      }
       const p1=room.players?.p1;
       const p2=room.players?.p2;
       p1Name.textContent=p1?.name || 'Waiting...';
@@ -630,6 +672,20 @@
       p1Ready.className=p1?.ready?'ready':'notReady';
       p2Ready.textContent=p2?.ready?'READY':'NOT READY';
       p2Ready.className=p2?.ready?'ready':'notReady';
+
+      const bothPresent=!!(p1 && p2);
+      const bothReady=!!(p1?.ready && p2?.ready);
+      if(window.startMatchBtn){
+        startMatchBtn.style.display = playerSlot==='p1' ? 'block' : 'none';
+        startMatchBtn.disabled = startLocked || !bothPresent || !bothReady || room.status==='starting';
+      }
+
+      if(roomPanel.style.display==='block'){
+        if(room.status==='starting') lobbyStatus.textContent='Starting...';
+        else if(!bothPresent) lobbyStatus.textContent=playerSlot==='p1' ? 'Waiting for player 2...' : 'Waiting for host...';
+        else if(!bothReady) lobbyStatus.textContent='Both players must be ready before host can start.';
+        else lobbyStatus.textContent=playerSlot==='p1' ? 'Both players ready. Tap START.' : 'Both players ready. Waiting for host.';
+      }
 
       const attacks = room.attacks?.[playerSlot] || {};
       const attackIds = Object.keys(attacks);
@@ -684,7 +740,7 @@
 
     await update(ref(db,'rooms/'+roomId),{
       status:'starting',
-      startAt:Date.now()+4000,
+      startAt:serverNow()+3500,
       winner:null,
       loser:null,
       attacks:null
@@ -701,21 +757,27 @@
   }
   function firebaseCountdown(startAt){
     const tick=()=>{
-      const ms=startAt-Date.now();
+      const ms=startAt-serverNow();
       const n=Math.min(3, Math.ceil(ms/1000));
       countdown.textContent=n>0?n:'GO!';
       if(ms<=0){
-        setTimeout(()=>{ isMultiplayer=true; reset(); },120);
+        setTimeout(()=>{ isMultiplayer=true; reset(); },80);
       }else requestAnimationFrame(tick);
     };
     tick();
   }
   async function leaveRoom(){
     if(roomUnsub){ roomUnsub(); roomUnsub=null; }
-    if(roomId && playerSlot==='p1') await remove(ref(db,'rooms/'+roomId));
-    else if(roomId && playerSlot) await remove(ref(db,'rooms/'+roomId+'/players/'+playerSlot));
-    roomId=''; playerSlot=''; roomStarted=false; isMultiplayer=false; matchEnded=false; garbageQueue=0;
-    openMulti();
+
+    const oldRoomId=roomId;
+    const oldSlot=playerSlot;
+
+    try{
+      if(oldRoomId && oldSlot==='p1') await remove(ref(db,'rooms/'+oldRoomId));
+      else if(oldRoomId && oldSlot) await remove(ref(db,'rooms/'+oldRoomId+'/players/'+oldSlot));
+    }catch{}
+
+    resetToMultiMenu(oldSlot==='p1' ? 'Room closed.' : 'You left the room.');
   }
 
   roomInput.addEventListener('input',()=>{
@@ -724,12 +786,10 @@
 
   const incomingRoom=new URL(location.href).searchParams.get('room');
   if(incomingRoom){
-    setTimeout(()=>{
-      show(multiScreen);
-      multiMenu.style.display='none';
-      joinPanel.style.display='block';
-      roomInput.value=incomingRoom.toUpperCase();
-    },100);
+    pendingRoom=incomingRoom.toUpperCase().replace(/[^A-Z0-9]/g,'');
+    roomInput.value=pendingRoom;
+    multiBtn.textContent='JOIN ROOM';
+    setTimeout(()=>show(menuScreen),100);
   }
 </script>
 </body>
