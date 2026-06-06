@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<title>Tetrish</title>
+<style>
+  :root{
+    --bg:#080914; --panel:#111429; --line:#2b315c; --text:#eef2ff; --muted:#94a3b8;
+    --good:#34d399; --bad:#fb7185; --accent:#8b5cf6;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0;overflow:hidden;background:radial-gradient(circle at 50% 0%,#1b1f46,#080914 55%);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--text);touch-action:none}
+  body{display:grid;place-items:center}
+  #desktop{
+    display:none;max-width:520px;padding:28px;text-align:center;background:#111429cc;border:1px solid var(--line);border-radius:24px;box-shadow:0 24px 80px #0008
+  }
+  #app{width:100vw;height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);gap:8px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:54px}
+  .brand{font-weight:900;letter-spacing:.08em;font-size:16px}
+  .pill{border:1px solid var(--line);background:#111429cc;border-radius:16px;padding:7px 10px;font-size:12px;color:var(--muted)}
+  .pill b{display:block;color:var(--text);font-size:16px;line-height:1.1}
+  main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 78px;gap:8px}
+  #boardWrap{position:relative;border:1px solid #293052;border-radius:18px;background:#050711cc;box-shadow:0 14px 40px #0006;overflow:hidden}
+  canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+  #overlay{position:absolute;inset:0;display:grid;place-items:center;background:#050711aa;backdrop-filter:blur(8px);text-align:center;padding:22px}
+  #overlay.hidden{display:none}
+  #overlay h1{margin:0 0 8px;font-size:30px;letter-spacing:.06em}
+  #overlay p{margin:0 0 18px;color:var(--muted);line-height:1.35}
+  button{border:0;border-radius:16px;background:linear-gradient(135deg,#8b5cf6,#22d3ee);color:white;font-weight:800;padding:14px 18px;font-size:16px;box-shadow:0 10px 30px #0006}
+  aside{display:flex;flex-direction:column;gap:8px}
+  .box{border:1px solid var(--line);background:#111429aa;border-radius:16px;padding:7px;text-align:center;min-height:74px}
+  .box span{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}
+  .mini{width:64px;height:54px;margin:auto}
+  #controls{display:grid;grid-template-columns:1fr;gap:8px;padding-bottom:8px}
+  .ctrl{height:58px;border-radius:18px;border:1px solid var(--line);background:#141832cc;color:#fff;font-weight:900;font-size:16px;display:grid;place-items:center;box-shadow:0 8px 24px #0004;user-select:none}
+  .ctrl:active{transform:translateY(1px);background:#222957}
+  #holdBtn{font-size:16px}
+  #boardWrap.shake{animation:shake .14s linear 1}
+  @keyframes shake{25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
+  @media (min-width: 760px), (hover:hover) and (pointer:fine){
+    #app{display:none}
+    #desktop{display:block}
+  }
+</style>
+</head>
+<body>
+<section id="desktop">
+  <h1>Mobile only</h1>
+  <p>This game is intentionally locked to phones/tablets with touch controls. Open it on a mobile browser to play.</p>
+</section>
+
+<div id="app">
+  <header>
+    <div class="brand">TETRISH <span id="playerName" style="font-size:12px;opacity:.8"></span></div>
+    <div class="pill">SCORE <b id="score">0</b></div>
+    <div class="pill">LVL <b id="level">1</b></div>
+    <div class="pill">LINES <b id="lines">0</b></div>
+  </header>
+
+  <main>
+    <div id="boardWrap">
+      <canvas id="board"></canvas>
+      <div id="overlay">
+        <div>
+          <h1>WELCOME</h1>
+          <p>Enter your name. Drag left/right to move, tap to rotate, swipe down for hard drop, hold for soft drop.</p><input id="nameInput" maxlength="20" placeholder="Player Name" style="padding:12px;border-radius:12px;border:1px solid #444;background:#111;color:white;margin-bottom:12px;width:220px">
+          <button id="start">START</button>
+        </div>
+      </div>
+    </div>
+    <aside>
+      <div class="box"><span>NEXT</span><canvas id="next" class="mini"></canvas></div>
+      <div class="box"><span>HOLD</span><canvas id="hold" class="mini"></canvas></div>
+      <div class="box"><span>APM</span><b id="apm">0</b></div>
+      <div class="box"><span>BEST</span><b id="best">0</b></div>
+      <div class="box"><span>COMBO</span><b id="combo">0</b></div>
+      <div class="box"><span>B2B</span><b id="b2b">0</b></div>
+    </aside>
+  </main>
+
+  <div id="controls">
+    <div class="ctrl" id="holdBtn" data-act="hold">HOLD</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const W=10,H=20, VISIBLE=20;
+  const canvas=document.getElementById('board'), ctx=canvas.getContext('2d');
+  const ncv=document.getElementById('next'), nctx=ncv.getContext('2d');
+  const hcv=document.getElementById('hold'), hctx=hcv.getContext('2d');
+  const scoreEl=score, levelEl=level, linesEl=lines, apmEl=apm, bestEl=best;
+  const overlay=document.getElementById('overlay'), startBtn=document.getElementById('start');
+  const colors={I:'#22d3ee',O:'#facc15',T:'#a78bfa',S:'#34d399',Z:'#fb7185',J:'#60a5fa',L:'#fb923c',G:'#202640'};
+  const shapes={
+    I:[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
+    O:[[1,1],[1,1]],
+    T:[[0,1,0],[1,1,1],[0,0,0]],
+    S:[[0,1,1],[1,1,0],[0,0,0]],
+    Z:[[1,1,0],[0,1,1],[0,0,0]],
+    J:[[1,0,0],[1,1,1],[0,0,0]],
+    L:[[0,0,1],[1,1,1],[0,0,0]]
+  };
+  let grid, bag=[], q=[], cur, holdPiece=null, held=false, scoreVal=0, linesVal=0, levelVal=1, bestVal=+localStorage.neonStackBest||0;
+  let last=0, drop=0, running=false, moves=0, startTime=0, cell=20, ox=0, oy=0; let effects=[], comboVal=0, b2bVal=0;
+
+  bestEl.textContent=bestVal;
+
+  function resize(){
+    const r=canvas.parentElement.getBoundingClientRect();
+    canvas.width=Math.floor(r.width*devicePixelRatio); canvas.height=Math.floor(r.height*devicePixelRatio);
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    cell=Math.floor(Math.min((r.width-18)/W, (r.height-18)/VISIBLE));
+    ox=(r.width-cell*W)/2; oy=(r.height-cell*VISIBLE)/2;
+    [ncv,hcv].forEach(c=>{c.width=70*devicePixelRatio;c.height=58*devicePixelRatio;c.getContext('2d').setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)});
+    draw();
+  }
+  addEventListener('resize',resize);
+
+  function reset(){
+    grid=Array.from({length:H},()=>Array(W).fill(0));
+    bag=[]; q=[]; holdPiece=null; held=false; scoreVal=0; linesVal=0; levelVal=1; comboVal=0; b2bVal=0; moves=0; startTime=performance.now();
+    while(q.length<5) q.push(take());
+    spawn(); running=true; overlay.classList.add('hidden'); updateUI();
+  }
+  function take(){ if(!bag.length) bag='IOTSZJL'.split('').sort(()=>Math.random()-.5); return bag.pop(); }
+  function spawn(){ cur={t:q.shift(),m:clone(shapes[q[0]?q[0]:take()]),x:3,y:0}; cur.t = cur.t || take(); cur.m=clone(shapes[cur.t]); q.push(take()); held=false; if(hit(cur.x,cur.y,cur.m)) gameOver(); }
+  function clone(m){return m.map(r=>r.slice())}
+  function rot(m){return m[0].map((_,i)=>m.map(r=>r[i]).reverse())}
+  function hit(x,y,m){return m.some((r,dy)=>r.some((v,dx)=>v&&(x+dx<0||x+dx>=W||y+dy>=H||grid[y+dy]?.[x+dx])))}
+  function merge(){cur.m.forEach((r,dy)=>r.forEach((v,dx)=>{if(v&&cur.y+dy>=0)grid[cur.y+dy][cur.x+dx]=cur.t}))}
+  function clearLines(){
+    let removedRows=[];
+    for(let y=0;y<grid.length;y++) if(grid[y].every(Boolean)) removedRows.push(y);
+    const c=removedRows.length;
+    if(c){
+      removedRows.forEach(y=>{
+        effects.push({type:'line',y:y,life:24});
+        for(let i=0;i<24;i++) effects.push({type:'particle',x:Math.random()*W,y:y+0.5,vx:(Math.random()-.5)*.28,vy:(Math.random()-.9)*.34,life:24+Math.random()*18,t:'I'});
+      });
+      grid=grid.filter((_,y)=>!removedRows.includes(y));
+      while(grid.length<H) grid.unshift(Array(W).fill(0));
+      comboVal++;
+      if(c===4) b2bVal++; else b2bVal=0;
+      scoreVal += ([0,100,300,500,800][c]*levelVal) + Math.max(0,comboVal-1)*50 + (b2bVal>1?200*levelVal:0);
+      linesVal += c;
+      levelVal=1+Math.floor(linesVal/10);
+    } else comboVal=0;
+  }
+  function lock(){merge(); clearLines(); spawn(); updateUI()}
+  function move(dx){ if(!running)return; if(!hit(cur.x+dx,cur.y,cur.m)){cur.x+=dx;moves++;draw()} }
+  function soft(){ if(!running)return; if(!hit(cur.x,cur.y+1,cur.m)){cur.y++;scoreVal++;moves++} else lock(); updateUI();draw() }
+  function hard(){ if(!running)return; let d=0; while(!hit(cur.x,cur.y+1,cur.m)){cur.y++;d++}
+    effects.push({type:'burst',x:cur.x+2,y:cur.y,life:20});
+    for(let i=0;i<22;i++) effects.push({type:'particle',x:cur.x+Math.random()*4,y:cur.y+Math.random()*2,vx:(Math.random()-.5)*.25,vy:-Math.random()*.35,life:18+Math.random()*14,t:cur.t});
+    const bw=document.getElementById('boardWrap'); bw.classList.remove('shake'); void bw.offsetWidth; bw.classList.add('shake');
+    scoreVal+=d*2;moves++;lock();draw() }
+  function rotate(){ if(!running)return; const m=rot(cur.m); for(const k of [0,-1,1,-2,2]) if(!hit(cur.x+k,cur.y,m)){cur.x+=k;cur.m=m;moves++;draw();return} }
+  function hold(){
+    if(!running||held)return;
+    const t=cur.t; if(holdPiece){cur={t:holdPiece,m:clone(shapes[holdPiece]),x:3,y:0}; holdPiece=t} else {holdPiece=t; spawn()}
+    held=true; moves++; drawMini(hctx,holdPiece); draw();
+  }
+  function gameOver(){
+    running=false; bestVal=Math.max(bestVal,scoreVal); localStorage.neonStackBest=bestVal;
+    overlay.classList.remove('hidden');
+    overlay.querySelector('h1').textContent='TOP OUT';
+    overlay.querySelector('p').textContent='Score '+scoreVal+' · Lines '+linesVal+'. Tap start to run it back.';
+    startBtn.textContent='RESTART'; updateUI();
+  }
+  function updateUI(){
+    scoreEl.textContent=scoreVal; levelEl.textContent=levelVal; linesEl.textContent=linesVal; bestEl.textContent=bestVal;
+    apmEl.textContent=Math.round(moves/Math.max(1,(performance.now()-startTime)/60000)); if(window.combo) combo.textContent=comboVal; if(window.b2b) b2b.textContent=b2bVal;
+    drawMini(nctx,q[0]); drawMini(hctx,holdPiece);
+  }
+  function drawCell(c,x,y,s,context=ctx){
+    context.fillStyle=colors[c]||colors.G; context.fillRect(x,y,s,s);
+    context.fillStyle='rgba(255,255,255,.18)'; context.fillRect(x+2,y+2,s-4,3);
+    context.strokeStyle='rgba(0,0,0,.28)'; context.lineWidth=1; context.strokeRect(x+.5,y+.5,s-1,s-1);
+  }
+  function ghostY(){let y=cur.y; while(!hit(cur.x,y+1,cur.m))y++; return y}
+  function draw(){
+    effects = effects.filter(e=>--e.life>0);
+    effects.forEach(e=>{
+      if(e.type==='line'){
+        ctx.fillStyle='rgba(255,255,255,'+(e.life/22)+')';
+        ctx.fillRect(ox,oy+e.y*cell,cell*W,cell);
+      }else if(e.type==='burst'){
+        ctx.strokeStyle='rgba(34,211,238,'+(e.life/20)+')';
+        ctx.lineWidth=4;
+        const r=(20-e.life)*7;
+        ctx.beginPath(); ctx.arc(ox+(e.x*cell), oy+(e.y*cell), r, 0, Math.PI*2); ctx.stroke();
+      }else if(e.type==='particle'){
+        e.x+=e.vx; e.y+=e.vy; e.vy+=.018;
+        ctx.globalAlpha=Math.max(0,e.life/34);
+        drawCell(e.t||'I', ox+e.x*cell, oy+e.y*cell, Math.max(3,cell*.22));
+        ctx.globalAlpha=1;
+      }
+    });
+
+    if(!ctx)return;
+    const r=canvas.parentElement.getBoundingClientRect();
+    ctx.clearRect(0,0,r.width,r.height);
+    ctx.fillStyle='#050711'; ctx.fillRect(ox,oy,cell*W,cell*VISIBLE); ctx.lineWidth=1;
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+      ctx.strokeStyle='rgba(255,255,255,.095)'; ctx.lineWidth=1; ctx.strokeRect(ox+x*cell+.5,oy+y*cell+.5,cell,cell);
+      if(grid[y][x]) drawCell(grid[y][x],ox+x*cell,oy+y*cell,cell);
+    }
+    if(cur){
+      const gy=ghostY(); ctx.globalAlpha=.16 + Math.sin(performance.now()/140)*.04; cur.m.forEach((r,dy)=>r.forEach((v,dx)=>v&&drawCell(cur.t,ox+(cur.x+dx)*cell,oy+(gy+dy)*cell,cell))); ctx.globalAlpha=1;
+      cur.m.forEach((r,dy)=>r.forEach((v,dx)=>v&&drawCell(cur.t,ox+(cur.x+dx)*cell,oy+(cur.y+dy)*cell,cell)));
+    }
+  }
+  function drawMini(c,t){
+    c.clearRect(0,0,70,58); if(!t)return;
+    const m=shapes[t], s=14, w=m[0].length*s, h=m.length*s, x=(70-w)/2, y=(58-h)/2;
+    m.forEach((r,dy)=>r.forEach((v,dx)=>v&&drawCell(t,x+dx*s,y+dy*s,s,c)));
+  }
+  function loop(t){
+    if(running){ drop+=t-last; if(drop>Math.max(90,720-(levelVal-1)*55)){soft();drop=0} draw(); updateUI() }
+    last=t; requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  startBtn.onclick=()=>{
+      const n=document.getElementById('nameInput');
+      const name=(n?.value||'Guest').trim()||'Guest';
+      const pn=document.getElementById('playerName');
+      if(pn) pn.textContent='• '+name;
+      reset();
+    };
+    const ni=document.getElementById('nameInput');
+    if(ni) ni.value='';
+    const pn=document.getElementById('playerName');
+    if(pn) pn.textContent='';
+  document.querySelectorAll('.ctrl').forEach(b=>{
+    b.addEventListener('touchstart',e=>{e.preventDefault(); act(b.dataset.act)}, {passive:false});
+    b.addEventListener('click',()=>act(b.dataset.act));
+  });
+  function act(a){({hold:hold}[a]||(()=>{}))()}
+
+  let sx=0, sy=0, lastX=0, touching=false, softTimer=null, longPressTimer=null, didGesture=false;
+  const MOVE_STEP = 24;
+
+  function stopSoftDrop(){
+    clearInterval(softTimer); softTimer=null;
+    clearTimeout(longPressTimer); longPressTimer=null;
+  }
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const p=e.touches[0];
+    sx=lastX=p.clientX; sy=p.clientY; touching=true; didGesture=false;
+    stopSoftDrop();
+    longPressTimer=setTimeout(() => {
+      if(!touching || didGesture) return;
+      soft();
+      softTimer=setInterval(soft, 55);
+    }, 260);
+  }, {passive:false});
+
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if(!touching) return;
+    const p=e.touches[0], dx=p.clientX-lastX, totalY=p.clientY-sy;
+
+    if(Math.abs(totalY)>70 && totalY>0){
+      didGesture=true; stopSoftDrop(); hard(); touching=false; return;
+    }
+
+    if(Math.abs(dx)>=MOVE_STEP){
+      const steps=Math.trunc(dx/MOVE_STEP);
+      for(let i=0;i<Math.abs(steps);i++) move(steps>0?1:-1);
+      lastX += steps*MOVE_STEP;
+      didGesture=true; stopSoftDrop();
+    }
+  }, {passive:false});
+
+  canvas.addEventListener('touchend', e => {
+    e.preventDefault();
+    const p=e.changedTouches[0], dx=p.clientX-sx, dy=p.clientY-sy;
+    const wasSoftDropping=!!softTimer;
+    stopSoftDrop(); touching=false;
+    if(wasSoftDropping) return;
+    if(Math.abs(dx)<18 && Math.abs(dy)<18 && !didGesture) rotate();
+  }, {passive:false});
+
+  canvas.addEventListener('touchcancel', () => {
+    stopSoftDrop(); touching=false;
+  }, {passive:false});
+
+  resize();
+})();
+</script>
+</body>
+</html>
