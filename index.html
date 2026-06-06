@@ -152,7 +152,7 @@
   #gameOverlay.active{display:grid}
   #gameOverlay h1{margin:0 0 8px;font-size:30px;letter-spacing:.06em}
   #gameOverlay p{margin:0 0 18px;color:var(--muted);line-height:1.35}
-  aside{display:flex;flex-direction:column;gap:8px}
+  aside{display:flex;flex-direction:column;gap:8px;align-self:start}
   .box{border:1px solid var(--line);background:#111429aa;border-radius:16px;padding:7px;text-align:center;min-height:74px}
   .box span{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}
   .mini{width:64px;height:54px;margin:auto}
@@ -180,8 +180,8 @@
   #comboPopup.show{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
   #gameOverlay button{width:170px;display:block;margin-left:auto;margin-right:auto}
   #gameOverlay #quitBtn{margin-top:10px}
-  .nextBox{min-height:100%;display:flex;flex-direction:column;justify-content:flex-start;gap:5px}
-  .nextBox .mini{width:64px;height:48px}
+  .nextBox{min-height:auto;height:auto;display:flex;flex-direction:column;justify-content:flex-start;gap:5px}
+  .nextBox .mini{width:64px;height:42px}
   .opponentBox{font-size:12px}
   .opponentBox b{font-size:17px}
   .opponentBox small{display:block;color:#94a3b8;margin-top:4px}
@@ -204,6 +204,54 @@
     transition:height .18s ease;
   }
 
+
+  #gameScreen.multiplayerGame main{
+    grid-template-columns:1fr 92px;
+  }
+  #gameScreen.multiplayerGame aside{
+    align-self:stretch;
+    min-height:0;
+    display:grid;
+    grid-template-rows:auto minmax(0,1fr);
+    gap:8px;
+  }
+  #gameScreen.multiplayerGame .nextBox{
+    min-height:auto;
+    height:auto;
+    padding:6px;
+    gap:2px;
+  }
+  #gameScreen.multiplayerGame .nextBox .mini{
+    width:72px;
+    height:34px;
+  }
+  #gameScreen.multiplayerGame .opponentBox{
+    display:flex !important;
+    flex-direction:column;
+    justify-content:flex-start;
+    min-height:0;
+    padding:7px;
+  }
+  #gameScreen.multiplayerGame .opponentBox b{
+    font-size:15px;
+  }
+  #gameScreen.multiplayerGame .garbageMeter{
+    flex:1;
+    min-height:54px;
+    max-height:130px;
+  }
+  @media (max-height: 700px){
+    #gameScreen.multiplayerGame main{grid-template-columns:1fr 82px}
+    #gameScreen.multiplayerGame .nextBox .mini{width:62px;height:28px}
+    #gameScreen.multiplayerGame .opponentBox{font-size:10px;padding:5px}
+    #gameScreen.multiplayerGame .garbageMeter{min-height:42px;max-height:90px}
+  }
+  @media (min-width: 760px) and (max-width: 1179px){
+    #gameScreen.multiplayerGame main{grid-template-columns:minmax(0,1fr) 96px}
+    #gameScreen.multiplayerGame .nextBox .mini{width:78px;height:34px}
+    #gameScreen.multiplayerGame .garbageMeter{min-height:70px;max-height:150px}
+  }
+
   #boardWrap.shake{animation:shake .14s linear 1}
   @keyframes shake{25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
 
@@ -220,15 +268,15 @@
     .ctrl{height:62px;font-size:18px}
     aside{gap:6px;min-height:0}
     .box{min-height:54px;padding:6px}
-    .nextBox{gap:3px}
-    .nextBox .mini{width:72px;height:48px}
+    .nextBox{min-height:auto;height:auto;gap:3px}
+    .nextBox .mini{width:72px;height:42px}
     .opponentBox{font-size:11px}
   }
 
   @media (max-height: 700px){
     .heroTitle{font-size:46px}.panel{padding:18px 16px}.hint{margin-top:10px}
     #gameScreen{gap:6px}header{min-height:48px;grid-template-columns:1fr auto 48px}.topMenuBtn{width:48px;height:48px}.ctrl{height:52px}#controls{padding-bottom:4px}
-    aside{gap:6px}.box{min-height:64px;padding:5px}.mini{width:58px;height:44px}.nextBox .mini{width:58px;height:42px}
+    aside{gap:6px}.box{min-height:64px;padding:5px}.nextBox{min-height:auto;height:auto}.mini{width:58px;height:44px}.nextBox .mini{width:58px;height:42px}
   }
   @media (min-width: 1180px) and (hover:hover) and (pointer:fine){
     #app{display:none}#desktop{display:block}
@@ -443,6 +491,7 @@
   function show(screen){
     [menuScreen,multiScreen,gameScreen].forEach(s=>s.classList.remove('active'));
     screen.classList.add('active');
+    if(screen!==gameScreen) gameScreen.classList.remove('multiplayerGame');
     setTimeout(resize,50);
   }
 
@@ -523,6 +572,7 @@
   function reset(){
     pendingStart=false;
     if(window.opponentHud) opponentHud.style.display=isMultiplayer?'block':'none';
+    gameScreen.classList.toggle('multiplayerGame', !!isMultiplayer);
     show(gameScreen);
     startCountdown.classList.remove('show'); gameOverlay.classList.remove('active'); matchText.textContent=''; paused=false; matchEnded=false; garbageQueue=0; updateGarbageMeter(); lastIncomingGarbage=0; lastOpponentLost=false; retryBtn.style.display='none'; continueBtn.style.display='none'; quitBtn.textContent='QUIT';
     clearInterval(modeTimerId); modeTimerId=null; modeTimeLeft=singleMode==='time'?120:0;
@@ -962,6 +1012,51 @@
     startLocked=false; lobbyStatus.textContent='';
     if(window.startMatchBtn) startMatchBtn.style.display = playerSlot==='p1' ? 'block' : 'none';
   }
+
+  async function returnToRoomAfterDisconnect(message){
+    running=false;
+    paused=false;
+    matchEnded=false;
+    roomStarted=false;
+    startLocked=false;
+    gameOverlay.classList.remove('active');
+    countdown.textContent='';
+    if(window.opponentHud) opponentHud.style.display='none';
+    gameScreen.classList.remove('multiplayerGame');
+
+    if(roomId && playerSlot==='p1'){
+      await update(ref(db,'rooms/'+roomId),{
+        status:'waiting',
+        startAt:0,
+        winner:null,
+        loser:null,
+        attacks:null,
+        'players/p1/ready':false,
+        'players/p2/ready':false,
+        'players/p1/alive':true,
+        'players/p2/alive':true
+      }).catch(()=>{});
+    }else if(roomId && playerSlot==='p2'){
+      await update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{
+        ready:false,
+        alive:true,
+        score:0,
+        lines:0,
+        combo:0
+      }).catch(()=>{});
+    }
+
+    readyBtn.textContent='READY';
+    if(window.startMatchBtn){
+      startMatchBtn.disabled=false;
+      startMatchBtn.style.display = playerSlot==='p1' ? 'block' : 'none';
+    }
+    showRoomPanel();
+    show(multiScreen);
+    lobbyStatus.textContent=message || 'Opponent disconnected. Match stopped.';
+  }
+
+
   function listenRoom(){
     if(roomUnsub) roomUnsub();
     roomUnsub=onValue(ref(db,'rooms/'+roomId), snap=>{
@@ -996,7 +1091,7 @@
 
       const opponent = playerSlot==='p1' ? p2 : p1;
       if(isMultiplayer && opponent){
-        opponentHud.style.display='block';
+        opponentHud.style.display='flex';
         oppScore.textContent=opponent.score || 0;
         oppLines.textContent=opponent.lines || 0;
       }else{
@@ -1004,7 +1099,8 @@
       }
 
       if(isMultiplayer && running && !opponent){
-        showClearPopup('OPPONENT DISCONNECTED');
+        returnToRoomAfterDisconnect('Opponent disconnected. Back to room.');
+        return;
       }
 
       const attacks = room.attacks?.[playerSlot] || {};
