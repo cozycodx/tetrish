@@ -135,7 +135,7 @@
 
         <div class="twoBtns">
           <button id="readyBtn">READY</button>
-          <button id="leaveRoomBtn" class="dangerBtn">LEAVE</button>
+          <button id="startMatchBtn" class="secondaryBtn">START</button></div><div class="twoBtns" style="margin-top:8px"><button id="leaveRoomBtn" class="dangerBtn">LEAVE</button>
         </div>
         <div id="countdown"></div>
       </div>
@@ -156,7 +156,7 @@
         <div id="gameOverlay">
           <div>
             <h1>TOP OUT</h1>
-            <p id="gameOverText"></p>
+            <p id="gameOverText"></p><p id="matchText" style="color:#34d399;font-weight:900"></p>
             <button id="restartBtn">RESTART</button>
             <button id="quitBtn" class="secondaryBtn" style="margin-top:10px">MENU</button>
           </div>
@@ -223,7 +223,7 @@
   const scoreEl=score, levelEl=level, linesEl=lines, apmEl=apm, bestEl=best;
   const gameOverlay=document.getElementById('gameOverlay');
 
-  const colors={I:'#22d3ee',O:'#facc15',T:'#a78bfa',S:'#34d399',Z:'#fb7185',J:'#60a5fa',L:'#fb923c',G:'#202640'};
+  const colors={I:'#22d3ee',O:'#facc15',T:'#a78bfa',S:'#34d399',Z:'#fb7185',J:'#60a5fa',L:'#fb923c',G:'#64748b'};
   const shapes={
     I:[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
     O:[[1,1],[1,1]],
@@ -238,7 +238,7 @@
   let last=0, drop=0, running=false, moves=0, startTime=0, cell=20, ox=0, oy=0; let effects=[], comboVal=0, b2bVal=0;
   let player='Guest';
 
-  let roomId='', playerId='', playerSlot='', roomUnsub=null, roomStarted=false;
+  let roomId='', playerId='', playerSlot='', roomUnsub=null, roomStarted=false, isMultiplayer=false, matchEnded=false, garbageQueue=0, lastIncomingGarbage=0, lastOpponentLost=false;
 
   bestEl.textContent=bestVal;
 
@@ -271,11 +271,11 @@
 
   function reset(){
     show(gameScreen);
-    gameOverlay.classList.remove('active');
+    gameOverlay.classList.remove('active'); matchText.textContent=''; matchEnded=false; garbageQueue=0; lastIncomingGarbage=0; lastOpponentLost=false;
     grid=Array.from({length:H},()=>Array(W).fill(0));
     bag=[]; q=[]; holdPiece=null; held=false; scoreVal=0; linesVal=0; levelVal=1; comboVal=0; b2bVal=0; moves=0; startTime=performance.now();
     while(q.length<5) q.push(take());
-    spawn(); running=true; updateUI(); resize();
+    spawn(); running=true; if(isMultiplayer && roomId && playerSlot){ update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{alive:true,score:0,lines:0,combo:0}); } updateUI(); resize();
   }
   function take(){ if(!bag.length) bag='IOTSZJL'.split('').sort(()=>Math.random()-.5); return bag.pop(); }
   function spawn(){ cur={t:q.shift(),m:clone(shapes[q[0]?q[0]:take()]),x:3,y:0}; cur.t = cur.t || take(); cur.m=clone(shapes[cur.t]); q.push(take()); held=false; if(hit(cur.x,cur.y,cur.m)) gameOver(); }
@@ -283,6 +283,34 @@
   function rot(m){return m[0].map((_,i)=>m.map(r=>r[i]).reverse())}
   function hit(x,y,m){return m.some((r,dy)=>r.some((v,dx)=>v&&(x+dx<0||x+dx>=W||y+dy>=H||grid[y+dy]?.[x+dx])))}
   function merge(){cur.m.forEach((r,dy)=>r.forEach((v,dx)=>{if(v&&cur.y+dy>=0)grid[cur.y+dy][cur.x+dx]=cur.t}))}
+
+  function addGarbageLines(count){
+    if(!count || count<1) return;
+    for(let i=0;i<count;i++){
+      grid.shift();
+      const hole=Math.floor(Math.random()*W);
+      const row=Array(W).fill('G');
+      row[hole]=0;
+      grid.push(row);
+    }
+    effects.push({type:'burst',x:5,y:H-1,life:18});
+  }
+
+  async function sendAttack(linesCleared){
+    if(!isMultiplayer || !roomId || !playerSlot || matchEnded || linesCleared<1) return;
+    const comboBonus = Math.max(0, comboVal-1);
+    const garbage = linesCleared + comboBonus;
+    const target = playerSlot==='p1' ? 'p2' : 'p1';
+    const attackRef = ref(db,'rooms/'+roomId+'/players/'+target+'/garbage');
+    const snapPath = 'rooms/'+roomId+'/players/'+target+'/garbage';
+    // Simple transaction-free counter using timestamped attacks to avoid overwrite conflicts.
+    const attackId = Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+    await set(ref(db,'rooms/'+roomId+'/attacks/'+target+'/'+attackId), {
+      from: playerSlot,
+      amount: garbage,
+      createdAt: Date.now()
+    });
+  }
   function clearLines(){
     let removedRows=[];
     for(let y=0;y<grid.length;y++) if(grid[y].every(Boolean)) removedRows.push(y);
@@ -297,11 +325,12 @@
       comboVal++;
       if(c===4) b2bVal++; else b2bVal=0;
       scoreVal += ([0,100,300,500,800][c]*levelVal) + Math.max(0,comboVal-1)*50 + (b2bVal>1?200*levelVal:0);
+      sendAttack(c);
       linesVal += c;
       levelVal=1+Math.floor(linesVal/10);
     } else comboVal=0;
   }
-  function lock(){merge(); clearLines(); spawn(); updateUI()}
+  function lock(){merge(); clearLines(); if(garbageQueue>0){addGarbageLines(garbageQueue); garbageQueue=0;} spawn(); updateUI()}
   function move(dx){ if(!running)return; if(!hit(cur.x+dx,cur.y,cur.m)){cur.x+=dx;moves++;draw()} }
   function soft(){ if(!running)return; if(!hit(cur.x,cur.y+1,cur.m)){cur.y++;scoreVal++;moves++} else lock(); updateUI();draw() }
   function hard(){ if(!running)return; let d=0; while(!hit(cur.x,cur.y+1,cur.m)){cur.y++;d++}
@@ -315,16 +344,30 @@
     const t=cur.t; if(holdPiece){cur={t:holdPiece,m:clone(shapes[holdPiece]),x:3,y:0}; holdPiece=t} else {holdPiece=t; spawn()}
     held=true; moves++; drawMini(hctx,holdPiece); draw();
   }
-  function gameOver(){
-    running=false; bestVal=Math.max(bestVal,scoreVal); localStorage.neonStackBest=bestVal;
+  async function gameOver(){
+    if(matchEnded) return;
+    running=false; matchEnded=true;
+    if(isMultiplayer && roomId && playerSlot){ await update(ref(db,'rooms/'+roomId),{status:'finished', loser:playerSlot, winner:playerSlot==='p1'?'p2':'p1'}); }
+    bestVal=Math.max(bestVal,scoreVal); localStorage.neonStackBest=bestVal;
     gameOverText.textContent='Score '+scoreVal+' · Lines '+linesVal+'.';
     gameOverlay.classList.add('active');
     updateUI();
   }
+
+  function finishMatch(won){
+    if(matchEnded) return;
+    matchEnded=true;
+    running=false;
+    gameOverText.textContent=won ? 'Opponent topped out.' : 'You topped out.';
+    matchText.textContent=won ? 'YOU WIN' : 'YOU LOSE';
+    gameOverlay.classList.add('active');
+  }
+
   function updateUI(){
     scoreEl.textContent=scoreVal; levelEl.textContent=levelVal; linesEl.textContent=linesVal; bestEl.textContent=bestVal;
     apmEl.textContent=Math.round(moves/Math.max(1,(performance.now()-startTime)/60000)); combo.textContent=comboVal; b2b.textContent=b2bVal;
     drawMini(nctx,q[0]); drawMini(hctx,holdPiece);
+    if(isMultiplayer && roomId && playerSlot && running){ update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{score:scoreVal,lines:linesVal,combo:comboVal}).catch(()=>{}); }
   }
   function drawCell(c,x,y,s,context=ctx){
     context.fillStyle=colors[c]||colors.G; context.fillRect(x,y,s,s);
@@ -374,8 +417,8 @@
   }
   requestAnimationFrame(loop);
 
-  onePlayerBtn.onclick=()=>{ getName(); reset(); };
-  restartBtn.onclick=reset;
+  onePlayerBtn.onclick=()=>{ getName(); isMultiplayer=false; reset(); };
+  restartBtn.onclick=()=>{ if(isMultiplayer){ show(menuScreen); } else reset(); };
   quitBtn.onclick=()=>{ running=false; show(menuScreen); };
 
   document.querySelectorAll('.ctrl').forEach(b=>{
@@ -427,6 +470,14 @@
   joinRoomBtn.onclick=()=>joinRoom(roomInput.value.trim().toUpperCase());
   copyRoomBtn.onclick=()=>navigator.clipboard?.writeText(roomLink.textContent);
   leaveRoomBtn.onclick=leaveRoom;
+  startMatchBtn.onclick=async ()=>{
+    if(playerSlot!=='p1') return;
+    if(!roomId) return;
+    await update(ref(db,'rooms/'+roomId),{
+      status:'starting',
+      startAt:Date.now()+3000
+    });
+  };
   readyBtn.onclick=toggleReady;
 
   function makeRoomId(){
@@ -453,6 +504,7 @@
   }
   async function createRoom(){
     if(!firebaseReady){ showFirebaseWarning(); return; }
+    isMultiplayer=true;
     roomId=makeRoomId();
     playerId=makePlayerId();
     playerSlot='p1';
@@ -462,24 +514,27 @@
       status:'waiting',
       startAt:0,
       players:{
-        [playerSlot]:{id:playerId,name:player,ready:false,online:true}
+        [playerSlot]:{id:playerId,name:player,ready:false,online:true,alive:true,score:0,lines:0,combo:0,alive:true,score:0,lines:0,combo:0}
       }
     });
     onDisconnect(ref(db,'rooms/'+roomId+'/players/'+playerSlot)).remove();
     showRoomPanel();
+    if(window.startMatchBtn) startMatchBtn.style.display = (playerSlot==='p1' ? 'block' : 'none');
     listenRoom();
   }
   async function joinRoom(id){
     if(!firebaseReady){ showFirebaseWarning(); return; }
     if(!id) return;
+    isMultiplayer=true;
     roomId=id;
     playerId=makePlayerId();
     playerSlot='p2';
     await update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{
-      id:playerId,name:player,ready:false,online:true
+      id:playerId,name:player,ready:false,online:true,alive:true,score:0,lines:0,combo:0
     });
     onDisconnect(ref(db,'rooms/'+roomId+'/players/'+playerSlot)).remove();
     showRoomPanel();
+    if(window.startMatchBtn) startMatchBtn.style.display = (playerSlot==='p1' ? 'block' : 'none');
     listenRoom();
   }
   function showRoomPanel(){
@@ -506,8 +561,20 @@
       p2Ready.textContent=p2?.ready?'READY':'NOT READY';
       p2Ready.className=p2?.ready?'ready':'notReady';
 
-      if(p1?.ready && p2?.ready && room.status!=='starting' && playerSlot==='p1'){
-        update(ref(db,'rooms/'+roomId),{status:'starting',startAt:Date.now()+3000});
+
+
+      const attacks = room.attacks?.[playerSlot] || {};
+      const attackIds = Object.keys(attacks);
+      if(attackIds.length){
+        let total=0;
+        attackIds.forEach(id=>{ total += Number(attacks[id].amount||0); remove(ref(db,'rooms/'+roomId+'/attacks/'+playerSlot+'/'+id)); });
+        garbageQueue += total;
+      }
+
+      if(room.status==='finished'){
+        const won = room.winner === playerSlot;
+        finishMatch(won);
+        return;
       }
 
       if(room.status==='starting' && room.startAt && !roomStarted){
@@ -528,7 +595,7 @@
       const n=Math.ceil(ms/1000);
       countdown.textContent=n>0?n:'GO!';
       if(ms<=0){
-        setTimeout(()=>reset(),250);
+        setTimeout(()=>{ isMultiplayer=true; reset(); },250);
       }else requestAnimationFrame(tick);
     };
     tick();
@@ -536,7 +603,7 @@
   async function leaveRoom(){
     if(roomUnsub){ roomUnsub(); roomUnsub=null; }
     if(roomId && playerSlot) await remove(ref(db,'rooms/'+roomId+'/players/'+playerSlot));
-    roomId=''; playerSlot=''; roomStarted=false;
+    roomId=''; playerSlot=''; roomStarted=false; isMultiplayer=false; matchEnded=false; garbageQueue=0;
     openMulti();
   }
 
