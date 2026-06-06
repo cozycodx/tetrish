@@ -36,14 +36,14 @@
   .bgBlocks i:nth-child(3){left:16%;top:72%;background:#facc15;animation-delay:1.2s}
   .bgBlocks i:nth-child(4){left:84%;top:68%;background:#fb7185;animation-delay:1.8s}
   .bgBlocks i:nth-child(5){left:4%;top:46%;background:#34d399;animation-delay:2.4s}
-  .bgBlocks i:nth-child(6){left:68%;top:42%;background:#60a5fa;animation-delay:3s}
+  .bgBlocks i:nth-child(6){left:68%;top:48%;background:#60a5fa;animation-delay:3s}
   .bgBlocks i:nth-child(7){left:40%;top:84%;background:#fb923c;animation-delay:3.6s}
   .bgBlocks i:nth-child(8){left:48%;top:4%;background:#c084fc;animation-delay:4.2s}
   @keyframes floatBlock{
     0%,100%{transform:translateY(0) rotate(0deg) scale(1)}
     50%{transform:translateY(-18px) rotate(10deg) scale(1.08)}
   }
-  #menuScreen::before{
+  #menuScreen::before,#multiScreen::before{
     content:"";
     position:absolute;
     inset:-40%;
@@ -54,6 +54,21 @@
     transform:rotate(8deg);
     mask-image:radial-gradient(circle at center, black, transparent 65%);
     pointer-events:none;
+  }
+
+
+  #multiScreen .panel{
+    max-height:calc(100dvh - 36px);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  #multiScreen #countdown:empty{
+    min-height:0;
+    margin-top:0;
+  }
+  #multiScreen #lobbyStatus:empty{
+    margin-top:0;
   }
 
   .panel{position:relative;overflow:hidden}
@@ -87,7 +102,7 @@
   #clearPopup{
     position:absolute;
     left:50%;
-    top:32%;
+    top:28%;
     transform:translate(-50%,-50%) scale(.95);
     pointer-events:none;
     opacity:0;
@@ -116,8 +131,6 @@
   .roomCard{border:1px solid var(--line);background:#0f1328cc;border-radius:18px;padding:12px;margin:10px 0}
   .roomCode{font-size:28px;font-weight:950;letter-spacing:.12em;color:#e0e7ff;margin:4px 0}
   .roomLink{font-size:11px;word-break:break-all;color:#c4b5fd;background:#070918;border:1px solid #293052;border-radius:12px;padding:8px;margin-top:8px;user-select:text}
-  #qrBox{width:112px;height:112px;margin:10px auto;border-radius:13px;background:#fff;padding:6px;display:grid;place-items:center}
-  #qrBox img{width:100px;height:100px}
   .players{display:grid;gap:8px;margin:12px 0}
   .playerRow{display:flex;justify-content:space-between;align-items:center;border:1px solid #293052;background:#080b1a;border-radius:13px;padding:10px 12px;font-size:13px}
   .ready{color:#34d399;font-weight:900}
@@ -133,7 +146,7 @@
   .topStats{display:flex;gap:8px;justify-content:center}.pill{border:1px solid var(--line);background:#111429cc;border-radius:16px;padding:7px 10px;font-size:12px;color:var(--muted)}
   .pill b{display:block;color:var(--text);font-size:16px;line-height:1.1}
   main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 78px;gap:8px}
-  #boardWrap{position:relative;border:1px solid #293052;border-radius:18px;background:#050711cc;box-shadow:0 14px 40px #0006;overflow:hidden}
+  #boardWrap{position:relative;border:1px solid #293052;border-radius:18px;background:#050711cc;box-shadow:0 14px 40px #0006;overflow:hidden;aspect-ratio:10/20;height:100%;width:auto;max-width:100%;justify-self:center}
   canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
   #gameOverlay{position:absolute;inset:0;display:none;place-items:center;background:#050711aa;backdrop-filter:blur(8px);text-align:center;padding:22px;z-index:5}
   #gameOverlay.active{display:grid}
@@ -169,22 +182,6 @@
   #gameOverlay #quitBtn{margin-top:10px}
   .nextBox{min-height:100%;display:flex;flex-direction:column;justify-content:flex-start;gap:5px}
   .nextBox .mini{width:64px;height:48px}
-
-
-  .chatLog{
-    min-height:32px;
-    max-height:52px;
-    overflow:hidden;
-    color:#cbd5e1;
-    font-size:12px;
-    background:#070918;
-    border:1px solid #293052;
-    border-radius:10px;
-    padding:7px;
-    margin-top:7px;
-  }
-  .emoteRow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
-  .emoteRow button{padding:8px 0;border-radius:12px;font-size:18px}
   .opponentBox{font-size:12px}
   .opponentBox b{font-size:17px}
   .opponentBox small{display:block;color:#94a3b8;margin-top:4px}
@@ -211,20 +208,20 @@
   @keyframes shake{25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
 
   @media (min-width: 760px) and (max-width: 1179px){
-    #app{max-width:640px;margin:auto}
+    #app{max-width:620px;margin:auto}
     #gameScreen{padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);gap:8px}
-    main{grid-template-columns:minmax(0,1fr) 94px;gap:8px}
-    #boardWrap{max-width:calc((100dvh - 154px) * .55);justify-self:center;width:100%}
-    header{grid-template-columns:1fr auto 58px}
-    .topMenuBtn{width:58px;height:58px}
+    main{grid-template-columns:minmax(0,1fr) 88px;gap:8px}
+    #boardWrap{height:100%;width:auto;max-width:100%;aspect-ratio:10/20}
+    header{grid-template-columns:1fr auto 56px}
+    .topMenuBtn{width:56px;height:56px}
     .brand{font-size:18px}
-    .pill{font-size:12px;padding:7px 11px}
+    .pill{font-size:12px;padding:7px 10px}
     .pill b{font-size:18px}
     .ctrl{height:62px;font-size:18px}
-    aside{gap:6px}
-    .box{min-height:60px;padding:6px}
+    aside{gap:6px;min-height:0}
+    .box{min-height:54px;padding:6px}
     .nextBox{gap:3px}
-    .nextBox .mini{width:76px;height:50px}
+    .nextBox .mini{width:72px;height:48px}
     .opponentBox{font-size:11px}
   }
 
@@ -232,7 +229,6 @@
     .heroTitle{font-size:46px}.panel{padding:18px 16px}.hint{margin-top:10px}
     #gameScreen{gap:6px}header{min-height:48px;grid-template-columns:1fr auto 48px}.topMenuBtn{width:48px;height:48px}.ctrl{height:52px}#controls{padding-bottom:4px}
     aside{gap:6px}.box{min-height:64px;padding:5px}.mini{width:58px;height:44px}.nextBox .mini{width:58px;height:42px}
-    #qrBox{width:92px;height:92px}#qrBox img{width:80px;height:80px}
   }
   @media (min-width: 1180px) and (hover:hover) and (pointer:fine){
     #app{display:none}#desktop{display:block}
@@ -272,9 +268,12 @@
   </section>
 
   <section id="multiScreen" class="screen">
+    <div class="bgBlocks">
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
     <div class="panel">
       <h1 class="multiTitle">MULTIPLAYER</h1>
-      <p class="hint" style="margin-top:0">Create a room, share QR/link, both players ready up, then the game starts.</p>
+      <p class="hint" style="margin-top:0">Create a room, share link, both players ready up, then the game starts.</p>
       <div id="firebaseWarning">Firebase is not configured yet. Paste your Firebase config inside the code first.</div>
 
       <div id="multiMenu" class="menuBtns">
@@ -295,7 +294,6 @@
         <div class="roomCard">
           <b>Room Code</b>
           <div id="roomCode" class="roomCode">------</div>
-          <div id="qrBox"></div>
           <div id="roomLink" class="roomLink"></div>
           <button id="copyRoomBtn" style="margin-top:8px;width:100%">COPY LINK</button>
         </div>
@@ -303,17 +301,6 @@
         <div class="players">
           <div class="playerRow"><span id="p1Name">Player 1</span><span id="p1Ready" class="notReady">NOT READY</span></div>
           <div class="playerRow"><span id="p2Name">Waiting...</span><span id="p2Ready" class="notReady">NOT READY</span></div>
-        </div>
-
-        <div class="roomCard">
-          <b>ROOM CHAT</b>
-          <div id="chatLog" class="chatLog">No messages yet.</div>
-          <div class="emoteRow">
-            <button data-emote="👍">👍</button>
-            <button data-emote="🔥">🔥</button>
-            <button data-emote="😅">😅</button>
-            <button data-emote="👋">👋</button>
-          </div>
         </div>
 
         <div class="twoBtns">
@@ -474,7 +461,7 @@
     canvas.width=Math.floor(r.width*devicePixelRatio); canvas.height=Math.floor(r.height*devicePixelRatio);
     ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
     cell=Math.floor(Math.min((r.width-18)/W, (r.height-18)/VISIBLE));
-    ox=(r.width-cell*W)/2; oy=(r.height-cell*VISIBLE)/2;
+    ox=Math.floor((r.width-cell*W)/2); oy=Math.floor((r.height-cell*VISIBLE)/2);
     [ncv,n2cv,n3cv,n4cv].forEach(c=>{c.width=70*devicePixelRatio;c.height=58*devicePixelRatio;c.getContext('2d').setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)});
     draw();
   }
@@ -537,7 +524,7 @@
     pendingStart=false;
     if(window.opponentHud) opponentHud.style.display=isMultiplayer?'block':'none';
     show(gameScreen);
-    startCountdown.classList.remove('show'); gameOverlay.classList.remove('active'); matchText.textContent=''; paused=false; matchEnded=false; garbageQueue=0; lastIncomingGarbage=0; lastOpponentLost=false; retryBtn.style.display='none'; continueBtn.style.display='none'; quitBtn.textContent='QUIT';
+    startCountdown.classList.remove('show'); gameOverlay.classList.remove('active'); matchText.textContent=''; paused=false; matchEnded=false; garbageQueue=0; updateGarbageMeter(); lastIncomingGarbage=0; lastOpponentLost=false; retryBtn.style.display='none'; continueBtn.style.display='none'; quitBtn.textContent='QUIT';
     clearInterval(modeTimerId); modeTimerId=null; modeTimeLeft=singleMode==='time'?120:0;
     grid=Array.from({length:H},()=>Array(W).fill(0));
     bag=[]; q=[]; holdPiece=null; held=false; scoreVal=0; linesVal=0; levelVal=1; comboVal=0; b2bVal=0; lastSpin=false; moves=0; startTime=performance.now();
@@ -550,6 +537,13 @@
   function rot(m){return m[0].map((_,i)=>m.map(r=>r[i]).reverse())}
   function hit(x,y,m){return m.some((r,dy)=>r.some((v,dx)=>v&&(x+dx<0||x+dx>=W||y+dy>=H||grid[y+dy]?.[x+dx])))}
   function merge(){cur.m.forEach((r,dy)=>r.forEach((v,dx)=>{if(v&&cur.y+dy>=0)grid[cur.y+dy][cur.x+dx]=cur.t}))}
+
+
+  function updateGarbageMeter(){
+    if(!window.garbageCount || !window.garbageFill) return;
+    garbageCount.textContent=garbageQueue;
+    garbageFill.style.height=Math.min(100,garbageQueue*14)+'%';
+  }
 
   function addGarbageLines(count){
     if(!count || count<1) return;
@@ -605,7 +599,7 @@
   }
 
   function showComboPopup(){
-    if(comboVal<1) return;
+    if(comboVal<2) return;
     comboPopup.textContent=comboVal+' COMBO';
     comboPopup.classList.add('show');
     clearTimeout(showComboPopup.t);
@@ -635,7 +629,7 @@
     } else { if(lastSpin) showClearPopup('T-SPIN'); comboVal=0; }
     lastSpin=false;
   }
-  function lock(){merge(); clearLines(); if(garbageQueue>0){addGarbageLines(garbageQueue); garbageQueue=0; garbageCount.textContent=0; garbageFill.style.height='0%';} spawn(); updateUI()}
+  function lock(){merge(); clearLines(); if(garbageQueue>0){addGarbageLines(garbageQueue); garbageQueue=0; updateGarbageMeter();} spawn(); updateUI()}
   function move(dx){ if(!running||paused)return; if(!hit(cur.x+dx,cur.y,cur.m)){cur.x+=dx;moves++;draw()} }
   function soft(){ if(!running||paused)return; if(!hit(cur.x,cur.y+1,cur.m)){cur.y++;scoreVal++;moves++} else lock(); updateUI();draw() }
   function hard(){ if(!running||paused)return; let d=0; while(!hit(cur.x,cur.y+1,cur.m)){cur.y++;d++}
@@ -689,13 +683,23 @@
     const r=canvas.parentElement.getBoundingClientRect();
     ctx.clearRect(0,0,r.width,r.height);
     ctx.fillStyle='#050711'; ctx.fillRect(ox,oy,cell*W,cell*VISIBLE); ctx.lineWidth=1;
+    ctx.fillStyle='rgba(255,255,255,.12)';
+    const gx=Math.round(ox), gy=Math.round(oy), gw=cell*W, gh=cell*VISIBLE;
+    for(let x=0;x<=W;x++){
+      const px=gx+x*cell;
+      ctx.fillRect(px,gy,1,gh);
+    }
+    for(let y=0;y<=H;y++){
+      const py=gy+y*cell;
+      ctx.fillRect(gx,py,gw,1);
+    }
+
     for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-      ctx.strokeStyle='rgba(255,255,255,.095)'; ctx.lineWidth=1; ctx.strokeRect(ox+x*cell+.5,oy+y*cell+.5,cell,cell);
-      if(grid[y][x]) drawCell(grid[y][x],ox+x*cell,oy+y*cell,cell);
+      if(grid[y][x]) drawCell(grid[y][x],gx+x*cell,gy+y*cell,cell);
     }
     if(cur){
-      const gy=ghostY(); ctx.globalAlpha=.16 + Math.sin(performance.now()/140)*.04; cur.m.forEach((r,dy)=>r.forEach((v,dx)=>v&&drawCell(cur.t,ox+(cur.x+dx)*cell,oy+(gy+dy)*cell,cell))); ctx.globalAlpha=1;
-      cur.m.forEach((r,dy)=>r.forEach((v,dx)=>v&&drawCell(cur.t,ox+(cur.x+dx)*cell,oy+(cur.y+dy)*cell,cell)));
+      const gy=ghostY(); ctx.globalAlpha=.16 + Math.sin(performance.now()/140)*.04; cur.m.forEach((r,dy)=>r.forEach((v,dx)=>v&&drawCell(cur.t,Math.round(ox)+(cur.x+dx)*cell,Math.round(oy)+(gy+dy)*cell,cell))); ctx.globalAlpha=1;
+      cur.m.forEach((r,dy)=>r.forEach((v,dx)=>v&&drawCell(cur.t,Math.round(ox)+(cur.x+dx)*cell,Math.round(oy)+(cur.y+dy)*cell,cell)));
     }
     effects = effects.filter(e=>--e.life>0);
     effects.forEach(e=>{
@@ -726,15 +730,25 @@
   }
   requestAnimationFrame(loop);
 
-  onePlayerBtn.onclick=()=>{ mainMenuButtons.style.display='none'; singleModePanel.style.display='grid'; };
-  backModeBtn.onclick=()=>{ singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; };
+  onePlayerBtn.onclick=()=>{ menuNameInput.style.display='none'; mainMenuButtons.style.display='none'; singleModePanel.style.display='grid'; };
+  backModeBtn.onclick=()=>{ menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; };
   normalModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='normal'; startGameWithCountdown(); };
   sprintModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='sprint'; startGameWithCountdown(); };
   timeAttackBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='time'; startGameWithCountdown(); };
   retryBtn.onclick=()=>{ if(!isMultiplayer) startGameWithCountdown(); };
   continueBtn.onclick=()=>{ paused=false; gameOverlay.classList.remove('active'); };
-  quitBtn.onclick=()=>{
+  quitBtn.onclick=async ()=>{
     if(isMultiplayer){
+      if(running && !matchEnded && roomId && playerSlot){
+        await update(ref(db,'rooms/'+roomId),{
+          status:'finished',
+          loser:playerSlot,
+          winner:playerSlot==='p1'?'p2':'p1'
+        });
+        finishMatch(false);
+        return;
+      }
+
       running=false;
       matchEnded=false;
       if(playerSlot==='p1' && roomId){
@@ -758,7 +772,7 @@
     }else{
       running=false;
       paused=false;
-      show(menuScreen);
+      menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; show(menuScreen);
     }
   };
   topMenuBtn.onclick=()=>{
@@ -814,7 +828,7 @@
 
   // Firebase multiplayer
   multiBtn.onclick=()=>{ getName(); openMulti(); };
-  backFromMultiBtn.onclick=()=>{ clearRoomUrl(); show(menuScreen); };
+  backFromMultiBtn.onclick=()=>{ clearRoomUrl(); menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; show(menuScreen); };
   showJoinBtn.onclick=()=>{ multiMenu.style.display='none'; joinPanel.style.display='block'; };
   cancelJoinBtn.onclick=()=>{ joinPanel.style.display='none'; multiMenu.style.display='grid'; };
   createRoomBtn.onclick=createRoom;
@@ -823,21 +837,6 @@
   leaveRoomBtn.onclick=leaveRoom;
   readyBtn.onclick=toggleReady;
   startMatchBtn.onclick=startMatch;
-  document.querySelectorAll('.emoteRow button').forEach(btn=>{
-    btn.onclick=()=>sendEmote(btn.dataset.emote);
-  });
-
-
-  async function sendEmote(emote){
-    if(!roomId || !playerSlot) return;
-    const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-    await set(ref(db,'rooms/'+roomId+'/chat/'+id),{
-      from:player,
-      emote,
-      createdAt:Date.now()
-    });
-  }
-
   function makeRoomId(){
     return Math.random().toString(36).slice(2,8).toUpperCase();
   }
@@ -959,7 +958,6 @@
     roomCode.textContent=roomId;
     const link=roomUrl(roomId);
     roomLink.textContent=link;
-    qr(qrBox, link);
     readyBtn.textContent='READY';
     startLocked=false; lobbyStatus.textContent='';
     if(window.startMatchBtn) startMatchBtn.style.display = playerSlot==='p1' ? 'block' : 'none';
@@ -1009,18 +1007,13 @@
         showClearPopup('OPPONENT DISCONNECTED');
       }
 
-      const chat = room.chat || {};
-      const chatItems = Object.values(chat).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)).slice(-3);
-      chatLog.textContent = chatItems.length ? chatItems.map(m=>(m.from||'Player')+' '+(m.emote||'')).join('  ·  ') : 'No messages yet.';
-
       const attacks = room.attacks?.[playerSlot] || {};
       const attackIds = Object.keys(attacks);
       if(attackIds.length){
         let total=0;
         attackIds.forEach(id=>{ total += Number(attacks[id].amount||0); remove(ref(db,'rooms/'+roomId+'/attacks/'+playerSlot+'/'+id)); });
         garbageQueue += total;
-        garbageCount.textContent=garbageQueue;
-        garbageFill.style.height=Math.min(100,garbageQueue*12)+'%';
+        updateGarbageMeter();
       }
 
       if(room.status==='finished'){
@@ -1117,7 +1110,7 @@
     pendingRoom=incomingRoom.toUpperCase().replace(/[^A-Z0-9]/g,'');
     roomInput.value=pendingRoom;
     multiBtn.textContent='JOIN ROOM';
-    setTimeout(()=>show(menuScreen),100);
+    setTimeout(()=>{ menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; show(menuScreen); },100);
   }
 </script>
 </body>
