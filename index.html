@@ -23,7 +23,7 @@
   main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 78px;gap:8px}
   #boardWrap{position:relative;border:1px solid #293052;border-radius:18px;background:#050711cc;box-shadow:0 14px 40px #0006;overflow:hidden}
   canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
-  #overlay{position:absolute;inset:0;display:grid;place-items:center;background:#050711aa;backdrop-filter:blur(8px);text-align:center;padding:22px}
+  #overlay{position:absolute;inset:0;display:grid;place-items:center;background:#050711aa;backdrop-filter:blur(8px);text-align:center;padding:10px;overflow:hidden}
   #overlay.hidden{display:none}
   #overlay h1{margin:0 0 8px;font-size:30px;letter-spacing:.06em}
   #overlay p{margin:0 0 18px;color:var(--muted);line-height:1.35}
@@ -36,6 +36,27 @@
   .ctrl{height:58px;border-radius:18px;border:1px solid var(--line);background:#141832cc;color:#fff;font-weight:900;font-size:16px;display:grid;place-items:center;box-shadow:0 8px 24px #0004;user-select:none}
   .ctrl:active{transform:translateY(1px);background:#222957}
   #holdBtn{font-size:16px}
+  #boardWrap.shake{animation:shake .14s linear 1}
+  @keyframes shake{25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
+
+  .menuBtns{display:grid;gap:10px}
+  .secondaryBtn{background:linear-gradient(135deg,#334155,#475569)}
+  #roomPanel{display:none;width:100%;max-width:320px;max-height:100%;overflow:hidden}
+  #roomPanel.active{display:block}
+  #menuPanel.hidden{display:none}
+  .roomCard{border:1px solid var(--line);background:#0f1328cc;border-radius:14px;padding:7px;margin:6px 0}
+  .roomLink{font-size:10px;word-break:break-all;color:#c4b5fd;background:#070918;border:1px solid #293052;border-radius:10px;padding:6px;margin-top:5px;max-height:48px;overflow:auto;user-select:text}
+  #qrBox,#answerQrBox{width:92px;height:92px;margin:6px auto;border-radius:10px;background:#fff;padding:4px;display:grid;place-items:center}
+  #qrBox img,#answerQrBox img{width:84px;height:84px}
+  .players{display:grid;gap:5px;margin:6px 0}
+  .playerRow{display:flex;justify-content:space-between;align-items:center;border:1px solid #293052;background:#080b1a;border-radius:10px;padding:6px 8px;font-size:12px}
+  .ready{color:#34d399;font-weight:900}
+  .notReady{color:#fb7185;font-weight:900}
+  #countdown{font-size:28px;font-weight:900;margin-top:4px;color:#22d3ee;min-height:32px}
+  textarea.signalBox{width:100%;height:62px;resize:none;border-radius:10px;border:1px solid #293052;background:#070918;color:#e5e7eb;font-size:10px;padding:6px}
+  .smallBtn{padding:9px 8px;font-size:12px;border-radius:12px}
+  .twoBtns{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:6px}
+  #scanVideo{display:none;width:100%;max-height:110px;border-radius:12px;margin-top:6px}
   #boardWrap.shake{animation:shake .14s linear 1}
   @keyframes shake{25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
   @media (min-width: 760px), (hover:hover) and (pointer:fine){
@@ -62,10 +83,75 @@
     <div id="boardWrap">
       <canvas id="board"></canvas>
       <div id="overlay">
-        <div>
+        <div id="menuPanel">
           <h1>WELCOME</h1>
-          <p>Enter your name. Drag left/right to move, tap to rotate, swipe down for hard drop, hold for soft drop.</p><input id="nameInput" maxlength="20" placeholder="Player Name" style="padding:12px;border-radius:12px;border:1px solid #444;background:#111;color:white;margin-bottom:12px;width:220px">
-          <button id="start">START</button>
+          <p>Enter your name, then choose a mode.</p>
+          <input id="nameInput" maxlength="20" placeholder="Player Name" style="padding:12px;border-radius:12px;border:1px solid #444;background:#111;color:white;margin-bottom:12px;width:220px">
+          <div class="menuBtns">
+            <button id="onePlayer">1 PLAYER</button>
+            <button id="multiPlayer" class="secondaryBtn">MULTIPLAYER</button>
+          </div>
+          <p style="font-size:12px;margin-top:12px">No server needed. Peer-to-peer uses QR/copy-paste offer and answer exchange.</p>
+        </div>
+
+        <div id="roomPanel">
+          <h1 id="roomTitle">P2P ROOM</h1>
+          <p id="roomHelp">Host creates an offer. Joiner scans or pastes it, then returns an answer.</p>
+
+          <div id="rolePicker" class="twoBtns">
+            <button id="hostBtn" class="smallBtn">HOST</button>
+            <button id="joinBtn" class="smallBtn secondaryBtn">JOIN</button>
+          </div>
+
+          <div id="hostStep" style="display:none">
+            <div class="roomCard">
+              <b>1. Share Host Offer</b>
+              <div id="qrBox"></div>
+              <textarea id="offerText" class="signalBox" readonly></textarea>
+              <div class="twoBtns">
+                <button id="copyOfferBtn" class="smallBtn">COPY</button>
+                <button id="regenOfferBtn" class="smallBtn secondaryBtn">REGEN</button>
+              </div>
+            </div>
+            <div class="roomCard">
+              <b>2. Paste/Scan Join Answer</b>
+              <textarea id="answerInput" class="signalBox" placeholder="Paste answer here"></textarea>
+              <div class="twoBtns">
+                <button id="applyAnswerBtn" class="smallBtn">CONNECT</button>
+                <button id="scanAnswerBtn" class="smallBtn secondaryBtn">SCAN</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="joinStep" style="display:none">
+            <div class="roomCard">
+              <b>1. Paste/Scan Host Offer</b>
+              <textarea id="offerInput" class="signalBox" placeholder="Paste host offer here"></textarea>
+              <div class="twoBtns">
+                <button id="applyOfferBtn" class="smallBtn">CREATE ANSWER</button>
+                <button id="scanOfferBtn" class="smallBtn secondaryBtn">SCAN</button>
+              </div>
+            </div>
+            <div class="roomCard">
+              <b>2. Share Join Answer</b>
+              <div id="answerQrBox"></div>
+              <textarea id="joinAnswerText" class="signalBox" readonly></textarea>
+              <button id="copyAnswerBtn" class="smallBtn" style="margin-top:6px;width:100%">COPY ANSWER</button>
+            </div>
+          </div>
+
+          <video id="scanVideo" playsinline></video>
+
+          <div class="players">
+            <div class="playerRow"><span id="p1Name">You</span><span id="p1Ready" class="notReady">NOT READY</span></div>
+            <div class="playerRow"><span id="p2Name">Not connected</span><span id="p2Ready" class="notReady">NOT READY</span></div>
+          </div>
+
+          <div class="twoBtns">
+            <button id="readyBtn" class="smallBtn">READY</button>
+            <button id="backBtn" class="smallBtn secondaryBtn">BACK</button>
+          </div>
+          <div id="countdown"></div>
         </div>
       </div>
     </div>
@@ -91,7 +177,7 @@
   const ncv=document.getElementById('next'), nctx=ncv.getContext('2d');
   const hcv=document.getElementById('hold'), hctx=hcv.getContext('2d');
   const scoreEl=score, levelEl=level, linesEl=lines, apmEl=apm, bestEl=best;
-  const overlay=document.getElementById('overlay'), startBtn=document.getElementById('start');
+  const overlay=document.getElementById('overlay');
   const colors={I:'#22d3ee',O:'#facc15',T:'#a78bfa',S:'#34d399',Z:'#fb7185',J:'#60a5fa',L:'#fb923c',G:'#202640'};
   const shapes={
     I:[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
@@ -223,17 +309,249 @@
   }
   requestAnimationFrame(loop);
 
-  startBtn.onclick=()=>{
-      const n=document.getElementById('nameInput');
-      const name=(n?.value||'Guest').trim()||'Guest';
-      const pn=document.getElementById('playerName');
-      if(pn) pn.textContent='• '+name;
-      reset();
-    };
-    const ni=document.getElementById('nameInput');
-    if(ni) ni.value='';
+  const onePlayerBtn=document.getElementById('onePlayer');
+  const multiPlayerBtn=document.getElementById('multiPlayer');
+  const menuPanel=document.getElementById('menuPanel');
+  const roomPanel=document.getElementById('roomPanel');
+  const readyBtn=document.getElementById('readyBtn');
+  const backBtn=document.getElementById('backBtn');
+
+  let myName='Guest', isHost=false, isReady=false, remoteReady=false;
+  let pc=null, dc=null, scanStream=null, scanTimer=null;
+
+  function setPlayerName(){
+    const n=document.getElementById('nameInput');
+    myName=(n?.value||'Guest').trim()||'Guest';
     const pn=document.getElementById('playerName');
-    if(pn) pn.textContent='';
+    if(pn) pn.textContent='• '+myName;
+    p1Name.textContent=myName;
+  }
+
+  function showRoom(){
+    setPlayerName();
+    menuPanel.classList.add('hidden');
+    roomPanel.classList.add('active');
+    rolePicker.style.display='grid';
+    hostStep.style.display='none';
+    joinStep.style.display='none';
+    countdown.textContent='';
+    setConnected(false);
+    updateReadyUI();
+  }
+
+  function qr(el, data){
+    if(!data){ el.innerHTML=''; return; }
+    el.innerHTML='<img alt="QR" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encodeURIComponent(data)+'">';
+  }
+
+  function compact(obj){
+    return btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+  }
+
+  function expand(text){
+    text=(text||'').trim();
+    return JSON.parse(decodeURIComponent(escape(atob(text))));
+  }
+
+  function copyText(text){
+    navigator.clipboard?.writeText(text).catch(()=>{});
+  }
+
+  function makePeer(){
+    if(pc) pc.close();
+    pc=new RTCPeerConnection({iceServers:[]});
+    pc.onconnectionstatechange=()=>setConnected(pc.connectionState==='connected');
+    pc.oniceconnectionstatechange=()=>setConnected(pc.iceConnectionState==='connected' || pc.iceConnectionState==='completed');
+    return pc;
+  }
+
+  function waitIceDone(peer){
+    return new Promise(resolve=>{
+      if(peer.iceGatheringState==='complete') return resolve();
+      const done=()=>{ if(peer.iceGatheringState==='complete'){ peer.removeEventListener('icegatheringstatechange',done); resolve(); } };
+      peer.addEventListener('icegatheringstatechange',done);
+      setTimeout(resolve,2500);
+    });
+  }
+
+  function setupChannel(channel){
+    dc=channel;
+    dc.onopen=()=>{
+      sendMsg({type:'hello',name:myName,ready:isReady});
+      setConnected(true);
+    };
+    dc.onmessage=e=>{
+      const msg=JSON.parse(e.data||'{}');
+      if(msg.type==='hello'){
+        p2Name.textContent=msg.name||'Player 2';
+        remoteReady=!!msg.ready;
+        updateReadyUI();
+        sendMsg({type:'hello',name:myName,ready:isReady});
+      }
+      if(msg.type==='ready'){
+        remoteReady=!!msg.ready;
+        updateReadyUI();
+      }
+      if(msg.type==='start'){
+        startCountdown();
+      }
+    };
+    dc.onclose=()=>setConnected(false);
+  }
+
+  function sendMsg(msg){
+    if(dc && dc.readyState==='open') dc.send(JSON.stringify(msg));
+  }
+
+  function setConnected(ok){
+    if(ok){
+      if(p2Name.textContent==='Not connected') p2Name.textContent='Connected player';
+    }else{
+      remoteReady=false;
+      p2Name.textContent='Not connected';
+      p2Ready.textContent='NOT READY';
+      p2Ready.className='notReady';
+    }
+  }
+
+  async function hostCreate(){
+    isHost=true;
+    rolePicker.style.display='none';
+    hostStep.style.display='block';
+    joinStep.style.display='none';
+    p2Name.textContent='Waiting for answer...';
+    makePeer();
+    setupChannel(pc.createDataChannel('tetrish'));
+    const offer=await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    await waitIceDone(pc);
+    const code=compact(pc.localDescription);
+    offerText.value=code;
+    qr(qrBox, code);
+  }
+
+  async function hostApplyAnswer(){
+    try{
+      const answer=expand(answerInput.value);
+      await pc.setRemoteDescription(answer);
+      p2Name.textContent='Connecting...';
+    }catch(err){
+      alert('Invalid answer code.');
+    }
+  }
+
+  async function joinCreateAnswer(){
+    try{
+      isHost=false;
+      makePeer();
+      pc.ondatachannel=e=>setupChannel(e.channel);
+      const offer=expand(offerInput.value);
+      await pc.setRemoteDescription(offer);
+      const answer=await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      await waitIceDone(pc);
+      const code=compact(pc.localDescription);
+      joinAnswerText.value=code;
+      qr(answerQrBox, code);
+      p2Name.textContent='Send answer to host';
+    }catch(err){
+      alert('Invalid host offer code.');
+    }
+  }
+
+  function updateReadyUI(){
+    p1Ready.textContent=isReady?'READY':'NOT READY';
+    p1Ready.className=isReady?'ready':'notReady';
+    p2Ready.textContent=remoteReady?'READY':'NOT READY';
+    p2Ready.className=remoteReady?'ready':'notReady';
+    if(isReady && remoteReady && isHost){
+      sendMsg({type:'start'});
+      startCountdown();
+    }
+  }
+
+  function startCountdown(){
+    let n=3;
+    countdown.textContent=n;
+    const timer=setInterval(()=>{
+      n--;
+      countdown.textContent=n>0?n:'GO!';
+      if(n<=0){
+        clearInterval(timer);
+        setTimeout(()=>{ reset(); },350);
+      }
+    },1000);
+  }
+
+  async function scanInto(textarea){
+    if(!('BarcodeDetector' in window)){
+      alert('QR scanning is not supported in this browser. Use copy/paste instead.');
+      return;
+    }
+    try{
+      stopScan();
+      const detector=new BarcodeDetector({formats:['qr_code']});
+      scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      scanVideo.srcObject=scanStream;
+      scanVideo.style.display='block';
+      await scanVideo.play();
+      scanTimer=setInterval(async()=>{
+        try{
+          const codes=await detector.detect(scanVideo);
+          if(codes[0]){
+            textarea.value=codes[0].rawValue;
+            stopScan();
+          }
+        }catch{}
+      },350);
+    }catch{
+      alert('Camera permission was blocked. Use copy/paste instead.');
+      stopScan();
+    }
+  }
+
+  function stopScan(){
+    clearInterval(scanTimer); scanTimer=null;
+    if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+    scanVideo.style.display='none';
+  }
+
+  onePlayerBtn.onclick=()=>{ setPlayerName(); reset(); };
+  multiPlayerBtn.onclick=showRoom;
+  hostBtn.onclick=hostCreate;
+  joinBtn.onclick=()=>{
+    isHost=false;
+    rolePicker.style.display='none';
+    hostStep.style.display='none';
+    joinStep.style.display='block';
+    p2Name.textContent='Paste host offer';
+  };
+  regenOfferBtn.onclick=hostCreate;
+  copyOfferBtn.onclick=()=>copyText(offerText.value);
+  copyAnswerBtn.onclick=()=>copyText(joinAnswerText.value);
+  applyAnswerBtn.onclick=hostApplyAnswer;
+  applyOfferBtn.onclick=joinCreateAnswer;
+  scanOfferBtn.onclick=()=>scanInto(offerInput);
+  scanAnswerBtn.onclick=()=>scanInto(answerInput);
+  readyBtn.onclick=()=>{
+    isReady=!isReady;
+    readyBtn.textContent=isReady?'UNREADY':'READY';
+    sendMsg({type:'ready',ready:isReady});
+    updateReadyUI();
+  };
+  backBtn.onclick=()=>{
+    stopScan();
+    if(dc) dc.close();
+    if(pc) pc.close();
+    pc=null; dc=null;
+    roomPanel.classList.remove('active');
+    menuPanel.classList.remove('hidden');
+  };
+
+  const ni=document.getElementById('nameInput');
+  if(ni) ni.value='';
+  const pn=document.getElementById('playerName');
+  if(pn) pn.textContent='';
   document.querySelectorAll('.ctrl').forEach(b=>{
     b.addEventListener('touchstart',e=>{e.preventDefault(); act(b.dataset.act)}, {passive:false});
     b.addEventListener('click',()=>act(b.dataset.act));
