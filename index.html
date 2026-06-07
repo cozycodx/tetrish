@@ -654,7 +654,7 @@
   let player='Guest';
   let pendingStart=false, singleMode='normal', modeTimeLeft=0, modeEndTime=0, modeTimerId=null, sprintStartTime=0, bestSprint=+(localStorage.tetrishBestSprint||0);
 
-  let roomId='', playerId='', playerSlot='', roomUnsub=null, roomStarted=false, isMultiplayer=false, matchEnded=false, garbageQueue=0, lastIncomingGarbage=0, lastOpponentLost=false, paused=false, currentRoom=null, startLocked=false, serverOffset=0, pendingRoom='';
+  let roomId='', playerId='', playerSlot='', roomUnsub=null, roomStarted=false, isMultiplayer=false, matchEnded=false, garbageQueue=0, lastIncomingGarbage=0, lastOpponentLost=false, paused=false, currentRoom=null, startLocked=false, serverOffset=0, pendingRoom='', remotePauseActive=false, pauseResumeAt=0;
 
 
 
@@ -769,6 +769,45 @@
     draw();
   }
 
+
+  function resumeMultiplayerCountdown(resumeAt){
+    show(gameScreen);
+    gameScreen.classList.add('multiplayerGame');
+    gameOverlay.classList.remove('active');
+    startCountdown.classList.add('show');
+    running=false;
+    paused=true;
+
+    const tick=()=>{
+      const ms=resumeAt-serverNow();
+      const n=Math.min(3, Math.ceil(ms/1000));
+      startCountdown.textContent=n>0?n:'GO!';
+      if(ms<=0){
+        setTimeout(()=>{
+          startCountdown.classList.remove('show');
+          paused=false;
+          running=true;
+          remotePauseActive=false;
+          pauseResumeAt=0;
+          resize();
+        },180);
+      }else requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  function showMultiplayerPausedOverlay(bySlot){
+    paused=true;
+    running=false;
+    gameOverText.textContent = bySlot===playerSlot ? 'Game paused.' : 'Opponent paused.';
+    matchText.textContent = bySlot===playerSlot ? 'Choose continue or quit.' : 'Waiting for opponent.';
+    retryBtn.style.display='none';
+    continueBtn.style.display = bySlot===playerSlot ? 'block' : 'none';
+    quitBtn.style.display = bySlot===playerSlot ? 'block' : 'none';
+    quitBtn.textContent='QUIT';
+    gameOverlay.classList.add('active');
+  }
+
   function startGameWithCountdown(){
     show(gameScreen);
     clearBoardVisuals();
@@ -838,7 +877,7 @@
     gameScreen.classList.toggle('multiplayerGame', !!isMultiplayer);
     updateViewportLayout();
     show(gameScreen);
-    startCountdown.classList.remove('show'); gameOverlay.classList.remove('active'); matchText.textContent=''; paused=false; matchEnded=false; garbageQueue=0; updateGarbageMeter(); lastIncomingGarbage=0; lastOpponentLost=false; retryBtn.style.display='none'; continueBtn.style.display='none'; quitBtn.textContent='QUIT';
+    startCountdown.classList.remove('show'); gameOverlay.classList.remove('active'); matchText.textContent=''; paused=false; remotePauseActive=false; pauseResumeAt=0; matchEnded=false; garbageQueue=0; updateGarbageMeter(); lastIncomingGarbage=0; lastOpponentLost=false; retryBtn.style.display='none'; continueBtn.style.display='none'; quitBtn.textContent='QUIT';
     clearInterval(modeTimerId); modeTimerId=null; modeTimeLeft=singleMode==='time'?120000:0; modeEndTime=0;
     grid=Array.from({length:H},()=>Array(W).fill(0));
     bag=[]; q=[]; holdPiece=null; held=false; scoreVal=0; linesVal=0; levelVal=1; comboVal=0; b2bVal=0; lastSpin=false; moves=0; startTime=performance.now(); sprintStartTime=startTime; modeEndTime=startTime+120000;
@@ -965,6 +1004,7 @@
         status:'finished',
         loser:playerSlot,
         winner:playerSlot==='p1'?'p2':'p1',
+        pause:null,
         'players/p1/ready':false,
         'players/p2/ready':false,
         'players/p1/alive':true,
@@ -982,6 +1022,8 @@
     if(matchEnded) return;
     matchEnded=true;
     running=false;
+    paused=false;
+    remotePauseActive=false;
     gameOverText.textContent=won ? 'Opponent topped out.' : 'You topped out.';
     matchText.textContent=won ? 'YOU WIN' : 'YOU LOSE';
     retryBtn.style.display=isMultiplayer?'none':'block'; continueBtn.style.display='none'; quitBtn.textContent=isMultiplayer?'ROOM':'MENU';
@@ -1093,10 +1135,25 @@
   sprintModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='sprint'; startGameWithCountdown(); };
   timeAttackBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='time'; startGameWithCountdown(); };
   retryBtn.onclick=()=>{ if(!isMultiplayer) startGameWithCountdown(); };
-  continueBtn.onclick=()=>{ paused=false; gameOverlay.classList.remove('active'); };
+  continueBtn.onclick=async ()=>{
+    if(isMultiplayer && roomId && playerSlot){
+      const resumeAt=serverNow()+3000;
+      await update(ref(db,'rooms/'+roomId),{
+        pause:{
+          active:false,
+          by:playerSlot,
+          resumeAt
+        }
+      });
+      resumeMultiplayerCountdown(resumeAt);
+      return;
+    }
+    paused=false;
+    gameOverlay.classList.remove('active');
+  };
   quitBtn.onclick=async ()=>{
     if(isMultiplayer){
-      if(running && !matchEnded && roomId && playerSlot){
+      if((running || paused || remotePauseActive) && !matchEnded && roomId && playerSlot){
         await update(ref(db,'rooms/'+roomId),{
           status:'finished',
           loser:playerSlot,
@@ -1119,6 +1176,7 @@
           winner:null,
           loser:null,
           attacks:null,
+          pause:null,
           'players/p1/ready':false,
           'players/p2/ready':false,
           'players/p1/alive':true,
@@ -1136,14 +1194,31 @@
       menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; show(menuScreen);
     }
   };
-  topMenuBtn.onclick=()=>{
-    if(!running) return;
+  topMenuBtn.onclick=async ()=>{
+    if(!running || matchEnded) return;
+
+    if(isMultiplayer && roomId && playerSlot){
+      paused=true;
+      running=false;
+      remotePauseActive=true;
+      await update(ref(db,'rooms/'+roomId),{
+        pause:{
+          active:true,
+          by:playerSlot,
+          createdAt:serverNow(),
+          resumeAt:0
+        }
+      });
+      showMultiplayerPausedOverlay(playerSlot);
+      return;
+    }
+
     paused=true;
-    gameOverText.textContent=isMultiplayer?'Leave this match?':'Quit this game?';
+    gameOverText.textContent='Quit this game?';
     matchText.textContent='';
     retryBtn.style.display='none';
     continueBtn.style.display='block';
-    quitBtn.textContent=isMultiplayer?'ROOM':'QUIT';
+    quitBtn.textContent='QUIT';
     gameOverlay.classList.add('active');
   };
 
@@ -1257,6 +1332,7 @@
       winner:null,
       loser:null,
       attacks:null,
+      pause:null,
       players:{
         [playerSlot]:{id:playerId,name:player,ready:false,online:true,alive:true,score:0,lines:0,combo:0,lastSeen:Date.now()}
       }
@@ -1410,9 +1486,23 @@
         opponentHud.style.display='none';
       }
 
-      if(isMultiplayer && running && !opponent){
+      if(isMultiplayer && (running || paused || remotePauseActive) && !opponent){
         returnToRoomAfterDisconnect('Opponent disconnected. Back to room.');
         return;
+      }
+
+
+      const pauseState = room.pause || null;
+      if(isMultiplayer && !matchEnded && pauseState){
+        if(pauseState.active){
+          if(!remotePauseActive || !paused){
+            remotePauseActive=true;
+            showMultiplayerPausedOverlay(pauseState.by);
+          }
+        }else if(pauseState.resumeAt && pauseState.resumeAt !== pauseResumeAt){
+          pauseResumeAt=pauseState.resumeAt;
+          resumeMultiplayerCountdown(pauseState.resumeAt);
+        }
       }
 
       const attacks = room.attacks?.[playerSlot] || {};
@@ -1473,7 +1563,8 @@
       startAt:serverNow()+3000,
       winner:null,
       loser:null,
-      attacks:null
+      attacks:null,
+      pause:null
     });
   }
 
