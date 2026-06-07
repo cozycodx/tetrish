@@ -654,7 +654,7 @@
   let player='Guest';
   let pendingStart=false, singleMode='normal', modeTimeLeft=0, modeEndTime=0, modeTimerId=null, sprintStartTime=0, bestSprint=+(localStorage.tetrishBestSprint||0);
 
-  let roomId='', playerId='', playerSlot='', roomUnsub=null, roomStarted=false, isMultiplayer=false, matchEnded=false, garbageQueue=0, lastIncomingGarbage=0, lastOpponentLost=false, paused=false, currentRoom=null, startLocked=false, serverOffset=0, pendingRoom='', remotePauseActive=false, pauseResumeAt=0;
+  let roomId='', playerId='', playerSlot='', roomUnsub=null, roomStarted=false, isMultiplayer=false, matchEnded=false, garbageQueue=0, lastIncomingGarbage=0, lastOpponentLost=false, paused=false, currentRoom=null, startLocked=false, serverOffset=0, pendingRoom='', remotePauseActive=false, pauseResumeAt=0, resumeCountdownActive=false;
 
 
 
@@ -771,6 +771,11 @@
 
 
   function resumeMultiplayerCountdown(resumeAt){
+    if(resumeCountdownActive && pauseResumeAt===resumeAt) return;
+
+    resumeCountdownActive=true;
+    pauseResumeAt=resumeAt;
+
     show(gameScreen);
     gameScreen.classList.add('multiplayerGame');
     gameOverlay.classList.remove('active');
@@ -779,19 +784,33 @@
     paused=true;
 
     const tick=()=>{
+      if(matchEnded) {
+        resumeCountdownActive=false;
+        startCountdown.classList.remove('show');
+        return;
+      }
+
       const ms=resumeAt-serverNow();
       const n=Math.min(3, Math.ceil(ms/1000));
       startCountdown.textContent=n>0?n:'GO!';
+
       if(ms<=0){
-        setTimeout(()=>{
+        setTimeout(async ()=>{
           startCountdown.classList.remove('show');
           paused=false;
           running=true;
           remotePauseActive=false;
-          pauseResumeAt=0;
+          resumeCountdownActive=false;
           resize();
+
+          // Clear the shared pause state after resume so listeners do not retrigger GO.
+          if(roomId && playerSlot){
+            await update(ref(db,'rooms/'+roomId),{pause:null}).catch(()=>{});
+          }
         },180);
-      }else requestAnimationFrame(tick);
+      }else{
+        requestAnimationFrame(tick);
+      }
     };
     tick();
   }
@@ -877,7 +896,7 @@
     gameScreen.classList.toggle('multiplayerGame', !!isMultiplayer);
     updateViewportLayout();
     show(gameScreen);
-    startCountdown.classList.remove('show'); gameOverlay.classList.remove('active'); matchText.textContent=''; paused=false; remotePauseActive=false; pauseResumeAt=0; matchEnded=false; garbageQueue=0; updateGarbageMeter(); lastIncomingGarbage=0; lastOpponentLost=false; retryBtn.style.display='none'; continueBtn.style.display='none'; quitBtn.textContent='QUIT';
+    startCountdown.classList.remove('show'); gameOverlay.classList.remove('active'); matchText.textContent=''; paused=false; remotePauseActive=false; pauseResumeAt=0; resumeCountdownActive=false; matchEnded=false; garbageQueue=0; updateGarbageMeter(); lastIncomingGarbage=0; lastOpponentLost=false; retryBtn.style.display='none'; continueBtn.style.display='none'; quitBtn.textContent='QUIT';
     clearInterval(modeTimerId); modeTimerId=null; modeTimeLeft=singleMode==='time'?120000:0; modeEndTime=0;
     grid=Array.from({length:H},()=>Array(W).fill(0));
     bag=[]; q=[]; holdPiece=null; held=false; scoreVal=0; linesVal=0; levelVal=1; comboVal=0; b2bVal=0; lastSpin=false; moves=0; startTime=performance.now(); sprintStartTime=startTime; modeEndTime=startTime+120000;
@@ -1024,6 +1043,8 @@
     running=false;
     paused=false;
     remotePauseActive=false;
+    resumeCountdownActive=false;
+    startCountdown.classList.remove('show');
     gameOverText.textContent=won ? 'Opponent topped out.' : 'You topped out.';
     matchText.textContent=won ? 'YOU WIN' : 'YOU LOSE';
     retryBtn.style.display=isMultiplayer?'none':'block'; continueBtn.style.display='none'; quitBtn.textContent=isMultiplayer?'ROOM':'MENU';
@@ -1138,6 +1159,7 @@
   continueBtn.onclick=async ()=>{
     if(isMultiplayer && roomId && playerSlot){
       const resumeAt=serverNow()+3000;
+      pauseResumeAt=resumeAt;
       await update(ref(db,'rooms/'+roomId),{
         pause:{
           active:false,
@@ -1288,7 +1310,7 @@
   function resetToMultiMenu(message=''){
     if(roomUnsub){ roomUnsub(); roomUnsub=null; }
     running=false; paused=false; roomId=''; playerSlot=''; playerId=''; roomStarted=false; isMultiplayer=false; matchEnded=false; garbageQueue=0; currentRoom=null; startLocked=false;
-    countdown.textContent='';
+    countdown.textContent=''; startCountdown.classList.remove('show'); resumeCountdownActive=false;
     clearRoomUrl();
     multiBtn.textContent='MULTIPLAYER';
     multiMenu.style.display='grid';
@@ -1408,7 +1430,7 @@
     roomStarted=false;
     startLocked=false;
     gameOverlay.classList.remove('active');
-    countdown.textContent='';
+    countdown.textContent=''; startCountdown.classList.remove('show'); resumeCountdownActive=false;
     if(window.opponentHud) opponentHud.style.display='none';
     gameScreen.classList.remove('multiplayerGame');
 
@@ -1497,11 +1519,13 @@
         if(pauseState.active){
           if(!remotePauseActive || !paused){
             remotePauseActive=true;
+            resumeCountdownActive=false;
             showMultiplayerPausedOverlay(pauseState.by);
           }
-        }else if(pauseState.resumeAt && pauseState.resumeAt !== pauseResumeAt){
-          pauseResumeAt=pauseState.resumeAt;
-          resumeMultiplayerCountdown(pauseState.resumeAt);
+        }else if(pauseState.resumeAt){
+          if(!resumeCountdownActive && pauseState.resumeAt !== pauseResumeAt){
+            resumeMultiplayerCountdown(pauseState.resumeAt);
+          }
         }
       }
 
