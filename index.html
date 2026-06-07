@@ -1325,6 +1325,36 @@
     updateUI();
   }
 
+
+  function updateRematchOffer(room, won){
+    if(!isMultiplayer || !room || !playerSlot || room.status!=='finished') return;
+
+    const me = room.players?.[playerSlot];
+    const opponentSlot = playerSlot==='p1' ? 'p2' : 'p1';
+    const opponent = room.players?.[opponentSlot];
+
+    if(won){
+      if(opponent?.rematch){
+        rematchBtn.style.display='block';
+        rematchBtn.disabled=false;
+        rematchBtn.textContent='REMATCH';
+        matchText.textContent='Opponent wants a rematch.';
+      }else{
+        rematchBtn.style.display='none';
+      }
+    }else{
+      rematchBtn.style.display='block';
+      if(me?.rematch){
+        rematchBtn.disabled=true;
+        rematchBtn.textContent='WAITING...';
+        matchText.textContent='Waiting for opponent.';
+      }else{
+        rematchBtn.disabled=false;
+        rematchBtn.textContent='REMATCH';
+      }
+    }
+  }
+
   function finishMatch(won){
     if(matchEnded && gameOverlay.classList.contains('active')) return;
     matchEnded=true;
@@ -1516,8 +1546,12 @@
     await update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{rematch:true,ready:true}).catch(()=>{});
     const snap=await get(ref(db,'rooms/'+roomId)).catch(()=>null);
     const room=snap?.val();
-    if(room?.players?.p1?.rematch && room?.players?.p2?.rematch && playerSlot==='p1'){
-      await update(ref(db,'rooms/'+roomId),{status:'starting',startAt:serverNow()+3000,winner:null,loser:null,attacks:null,pause:null,'players/p1/rematch':false,'players/p2/rematch':false,'players/p1/ready':true,'players/p2/ready':true});
+    if(room?.players?.p1?.rematch && room?.players?.p2?.rematch){
+      if(playerSlot==='p1'){
+        await update(ref(db,'rooms/'+roomId),{status:'starting',startAt:serverNow()+3000,winner:null,loser:null,attacks:null,pause:null,'players/p1/rematch':false,'players/p2/rematch':false,'players/p1/ready':true,'players/p2/ready':true});
+      }else{
+        matchText.textContent='Waiting for host to start rematch.';
+      }
     }
   };
   continueBtn.onclick=async ()=>{
@@ -1915,7 +1949,7 @@
         }
         const won = room.winner === playerSlot;
         finishMatch(won);
-        if(room.players?.[playerSlot]?.rematch){ rematchBtn.disabled=true; rematchBtn.textContent='WAITING...'; matchText.textContent='Waiting for opponent.'; }
+        updateRematchOffer(room, won);
         return;
       }
 
