@@ -90,6 +90,12 @@
   .bgBlocks i:nth-child(6){left:68%;top:48%;background:#60a5fa;animation-delay:3s}
   .bgBlocks i:nth-child(7){left:40%;top:84%;background:#fb923c;animation-delay:3.6s}
   .bgBlocks i:nth-child(8){left:48%;top:4%;background:#c084fc;animation-delay:4.2s}
+
+  .bgBlocks i:nth-child(9){left:24%;top:28%;background:#38bdf8;animation-delay:4.8s;width:24px;height:24px}
+  .bgBlocks i:nth-child(10){left:74%;top:34%;background:#34d399;animation-delay:5.4s;width:22px;height:22px}
+  .bgBlocks i:nth-child(11){left:28%;top:90%;background:#f472b6;animation-delay:6s;width:26px;height:26px}
+  .bgBlocks i:nth-child(12){left:90%;top:42%;background:#fde047;animation-delay:6.6s;width:20px;height:20px}
+
   @keyframes floatBlock{
     0%,100%{transform:translateY(0) rotate(0deg) scale(1)}
     50%{transform:translateY(-18px) rotate(10deg) scale(1.08)}
@@ -213,20 +219,42 @@
   .rangeRow{flex-direction:column;align-items:stretch;text-align:left}.rangeRow span{font-size:12px;color:#cbd5e1}
   .helpList,.statsList{text-align:left;border:1px solid #293052;background:#080b1a;border-radius:16px;padding:12px;color:#cbd5e1;font-size:13px}
   .helpList p{margin:6px 0}.statsList p{display:flex;justify-content:space-between;margin:7px 0}
+
+  .statsList h3{margin:10px 0 6px;color:#93c5fd;font-size:12px;letter-spacing:.08em}
+  .statsList h3:first-child{margin-top:0}
+
+
+
+  body.levelRushLv1 #gameScreen{background:radial-gradient(circle at 50% 0%,rgba(52,211,153,.18),transparent 48%)}
+  body.levelRushLv2 #gameScreen{background:radial-gradient(circle at 50% 0%,rgba(34,211,238,.20),transparent 48%)}
+  body.levelRushLv3 #gameScreen{background:radial-gradient(circle at 50% 0%,rgba(250,204,21,.20),transparent 48%)}
+  body.levelRushLv4 #gameScreen{background:radial-gradient(circle at 50% 0%,rgba(251,113,133,.22),transparent 48%)}
+
+
+  body.modeNormal #menuScreen .panel{background:linear-gradient(180deg,rgba(17,20,41,.94),rgba(5,7,17,.96))}
+  body.modeSprint #menuScreen .panel{background:linear-gradient(180deg,rgba(8,47,73,.94),rgba(5,7,17,.96))}
+  body.modeTime #menuScreen .panel{background:linear-gradient(180deg,rgba(88,28,28,.94),rgba(5,7,17,.96))}
+  body.modeLevelRush #menuScreen .panel{background:linear-gradient(180deg,rgba(20,83,45,.94),rgba(5,7,17,.96))}
+
+  body.modeNormal{background:radial-gradient(circle at 50% 0%,#1b1f46,#080914 55%)}
+  body.modeSprint{background:radial-gradient(circle at 50% 0%,#0e7490,#080914 58%)}
+  body.modeTime{background:radial-gradient(circle at 50% 0%,#7c2d12,#080914 58%)}
+  body.modeLevelRush{background:radial-gradient(circle at 50% 0%,#14532d,#080914 58%)}
+  body.modeNormal #gameScreen{background:radial-gradient(circle at 50% 0%,rgba(139,92,246,.20),transparent 48%)}
+  body.modeSprint #gameScreen{background:radial-gradient(circle at 50% 0%,rgba(34,211,238,.22),transparent 48%)}
+  body.modeTime #gameScreen{background:radial-gradient(circle at 50% 0%,rgba(251,113,133,.22),transparent 48%)}
+  body.modeLevelRush #gameScreen{background:radial-gradient(circle at 50% 0%,rgba(52,211,153,.22),transparent 48%)}
+
   .modeNormal #menuScreen .bgBlocks::after{filter:hue-rotate(0deg)}
   .modeSprint #menuScreen .bgBlocks::after{filter:hue-rotate(40deg) saturate(1.25)}
   .modeTime #menuScreen .bgBlocks::after{filter:hue-rotate(160deg) saturate(1.25)}
-  .modeSurvival #menuScreen .bgBlocks::after{filter:hue-rotate(90deg) saturate(1.35)}
-  .menuPreview{position:absolute;left:50%;top:11%;width:110px;height:76px;transform:translateX(-50%);opacity:.16;pointer-events:none;z-index:0;animation:menuPieceFall 4.8s ease-in-out infinite}
-  .menuPreview i{position:absolute;width:24px;height:24px;border-radius:5px;background:#22d3ee;box-shadow:0 0 20px #22d3ee}
-  .menuPreview i:nth-child(1){left:24px;top:0}.menuPreview i:nth-child(2){left:0;top:24px}.menuPreview i:nth-child(3){left:24px;top:24px}.menuPreview i:nth-child(4){left:48px;top:24px}
-  @keyframes menuPieceFall{0%,100%{transform:translate(-50%,-8px) rotate(-2deg)}50%{transform:translate(-50%,18px) rotate(2deg)}}
+  .modeLevelRush #menuScreen .bgBlocks::after{filter:hue-rotate(90deg) saturate(1.35)}50%{transform:translate(-50%,18px) rotate(2deg)}}
   .dangerFlash{position:absolute;left:0;right:0;bottom:0;height:18%;pointer-events:none;opacity:0;background:linear-gradient(0deg,rgba(251,113,133,.32),transparent);animation:dangerPulse .5s ease-in-out infinite;z-index:3}
   .dangerFlash.show{opacity:1}@keyframes dangerPulse{50%{opacity:.45}}
-  #boardWrap.survival1{box-shadow:0 14px 40px #0006,0 0 50px rgba(34,211,238,.05)}
-  #boardWrap.survival2{box-shadow:0 14px 40px #0006,0 0 55px rgba(52,211,153,.10)}
-  #boardWrap.survival3{box-shadow:0 14px 40px #0006,0 0 60px rgba(250,204,21,.12)}
-  #boardWrap.survival4{box-shadow:0 14px 40px #0006,0 0 70px rgba(251,113,133,.16)}
+  #boardWrap.levelrush1{box-shadow:0 14px 40px #0006,0 0 50px rgba(34,211,238,.05)}
+  #boardWrap.levelrush2{box-shadow:0 14px 40px #0006,0 0 55px rgba(52,211,153,.10)}
+  #boardWrap.levelrush3{box-shadow:0 14px 40px #0006,0 0 60px rgba(250,204,21,.12)}
+  #boardWrap.levelrush4{box-shadow:0 14px 40px #0006,0 0 70px rgba(251,113,133,.16)}
 
   .menuBtns{display:grid;gap:10px}
   button{border:0;border-radius:18px;background:linear-gradient(135deg,#8b5cf6,#22d3ee);color:white;font-weight:900;padding:14px 18px;font-size:16px;box-shadow:0 10px 30px #0006}
@@ -246,6 +274,26 @@
   .twoBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   #countdown{font-size:38px;font-weight:950;color:#22d3ee;min-height:44px;margin-top:8px}
   #firebaseWarning{display:none;color:#fbbf24;font-size:12px;line-height:1.35;margin:10px 0}
+
+
+  #gameScreen::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    opacity:.78;
+    filter:blur(18px);
+    background:radial-gradient(circle at 50% 28%,rgba(139,92,246,.20),transparent 46%);
+  }
+  #gameScreen > *{position:relative;z-index:1}
+  body.modeNormal #gameScreen::before{background:radial-gradient(circle at 50% 28%,rgba(139,92,246,.20),transparent 46%)}
+  body.modeSprint #gameScreen::before{background:radial-gradient(circle at 50% 28%,rgba(34,211,238,.25),transparent 46%)}
+  body.modeTime #gameScreen::before{background:radial-gradient(circle at 50% 28%,rgba(251,113,133,.24),transparent 46%)}
+  body.modeLevelRush #gameScreen::before{background:radial-gradient(circle at 50% 28%,rgba(52,211,153,.22),transparent 46%)}
+  body.levelRushLv1 #gameScreen::before{background:radial-gradient(circle at 46% 30%,rgba(52,211,153,.22),transparent 46%)}
+  body.levelRushLv2 #gameScreen::before{background:radial-gradient(circle at 46% 30%,rgba(34,211,238,.26),transparent 46%)}
+  body.levelRushLv3 #gameScreen::before{background:radial-gradient(circle at 46% 30%,rgba(250,204,21,.26),transparent 46%)}
+  body.levelRushLv4 #gameScreen::before{background:radial-gradient(circle at 46% 30%,rgba(251,113,133,.27),transparent 46%)}
 
   #gameScreen{width:100%;height:100%;display:none;flex-direction:column;padding:env(safe-area-inset-top) 12px max(8px,env(safe-area-inset-bottom));gap:8px}
   #gameScreen.active{display:flex}
@@ -457,7 +505,7 @@
   }
 </style>
 </head>
-<body>
+<body class="modeNormal">
 <section id="desktop">
   <h1>Mobile only</h1>
   <p>This game is intentionally locked to phones/tablets with touch controls. Open it on a mobile browser to play.</p>
@@ -467,10 +515,9 @@
 <div id="app">
   <section id="menuScreen" class="screen active">
     <div class="bgBlocks">
-      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
     </div>
     <div class="panel">
-      <div class="menuPreview"><i></i><i></i><i></i><i></i></div>
       <h1 class="heroTitle">TETRISH</h1>
       <div class="heroSub">STACK FAST • CLEAR HARD</div>
       <div class="menuDecor">
@@ -488,7 +535,7 @@
       </div>
       <div id="singleModePanel" class="menuBtns" style="display:none">
         <button id="normalModeBtn" class="modeBtn" data-modebg="normal">NORMAL<small>Classic endless play. Clear lines and survive.</small></button>
-        <button id="survivalModeBtn" class="secondaryBtn modeBtn" data-modebg="survival">SURVIVAL<small>Level up every 10 lines. Background changes every level.</small></button>
+        <button id="survivalModeBtn" class="secondaryBtn modeBtn" data-modebg="levelrush">LEVEL RUSH<small>Level up every 10 lines. Background changes every level.</small></button>
         <button id="sprintModeBtn" class="secondaryBtn modeBtn" data-modebg="sprint">SPRINT<small>Clear 40 lines as fast as possible.</small></button>
         <button id="timeAttackBtn" class="secondaryBtn modeBtn" data-modebg="time">TIME ATTACK<small>Score as much as you can in 2 minutes.</small></button>
         <button id="backModeBtn" class="dangerBtn">BACK</button>
@@ -497,14 +544,15 @@
         <h2>SETTINGS</h2>
         <label class="toggleRow"><span>Sound Effects</span><input id="soundToggle" type="checkbox"></label>
         <label class="toggleRow"><span>Vibration</span><input id="vibeToggle" type="checkbox"></label>
-        <label class="rangeRow"><span>Drag Sensitivity</span><input id="dragRange" type="range" min="16" max="36" value="24"></label>
+        <label class="rangeRow"><span>Swipe Repeat / DAS-ARR Feel</span><input id="dragRange" type="range" min="16" max="36" value="24"></label>
+        <label class="toggleRow"><span>Ghost Piece</span><input id="ghostToggle" type="checkbox"></label>
         <label class="rangeRow"><span>Effects Intensity</span><input id="effectsRange" type="range" min="0" max="2" value="1"></label>
         <button id="backSettingsBtn" class="dangerBtn">BACK</button>
       </div>
       <div id="helpPanel" class="menuBtns subPanel" style="display:none">
         <h2>CONTROLS</h2>
         <div class="helpList">
-          <p><b>Drag left/right</b> move</p>
+          <p><b>Drag left/right</b> move. Settings controls repeat feel.</p>
           <p><b>Tap board</b> rotate</p>
           <p><b>Swipe down</b> hard drop</p>
           <p><b>Hold board</b> soft drop</p>
@@ -522,7 +570,7 @@
 
   <section id="multiScreen" class="screen">
     <div class="bgBlocks">
-      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
     </div>
     <div class="panel">
       <h1 class="multiTitle">MULTIPLAYER</h1>
@@ -603,6 +651,10 @@
           <div class="box statBox">
             <span>LINES</span>
             <b id="lines">0</b>
+          </div>
+          <div id="levelBox" class="box statBox" style="display:none">
+            <span>LEVEL</span>
+            <b id="levelDisplay">1</b>
           </div>
           <div id="timerBox" class="box statBox" style="display:none">
             <span id="timerLabel">TIMER</span>
@@ -714,21 +766,36 @@
 
 
 
-  const defaultSettings={sound:true,vibe:true,drag:24,effects:1};
+  const defaultSettings={sound:true,vibe:true,drag:24,effects:1,ghost:true};
   let settings=Object.assign({}, defaultSettings, JSON.parse(localStorage.tetrishSettings||'{}'));
-  let stats=Object.assign({games:0,bestScore:0,bestSprint:0,totalLines:0,wins:0,losses:0}, JSON.parse(localStorage.tetrishStats||'{}'));
+  let stats=Object.assign({games:0,bestScore:0,bestNormal:0,bestTimeAttack:0,bestLevelRush:0,bestSprint:0,totalLines:0,wins:0,losses:0}, JSON.parse(localStorage.tetrishStats||'{}'));
   bestSprint = stats.bestSprint || bestSprint;
   function saveSettings(){ localStorage.tetrishSettings=JSON.stringify(settings); }
   function saveStats(){ localStorage.tetrishStats=JSON.stringify(stats); }
+
+  function recordSingleStats(){
+    stats.games++;
+    stats.bestScore=Math.max(stats.bestScore,scoreVal);
+    if(singleMode==='normal') stats.bestNormal=Math.max(stats.bestNormal,scoreVal);
+    if(singleMode==='time') stats.bestTimeAttack=Math.max(stats.bestTimeAttack,scoreVal);
+    if(singleMode==='levelrush') stats.bestLevelRush=Math.max(stats.bestLevelRush,scoreVal);
+    stats.totalLines+=linesVal;
+    saveStats();
+  }
+
   function updateStatsUI(){
     if(!window.statsList) return;
     statsList.innerHTML =
+      '<h3>Single Player</h3>'+
+      '<p><span>Best Normal Score</span><b>'+stats.bestNormal+'</b></p>'+
+      '<p><span>Best Level Rush Score</span><b>'+stats.bestLevelRush+'</b></p>'+
+      '<p><span>Best Time Attack Score</span><b>'+stats.bestTimeAttack+'</b></p>'+
+      '<p><span>Best Sprint Time</span><b>'+(stats.bestSprint?formatTime(stats.bestSprint):'--')+'</b></p>'+
+      '<h3>Overall</h3>'+
       '<p><span>Games Played</span><b>'+stats.games+'</b></p>'+
-      '<p><span>Best Score</span><b>'+stats.bestScore+'</b></p>'+
-      '<p><span>Best Sprint</span><b>'+(stats.bestSprint?formatTime(stats.bestSprint):'--')+'</b></p>'+
       '<p><span>Total Lines</span><b>'+stats.totalLines+'</b></p>'+
-      '<p><span>Multiplayer Wins</span><b>'+stats.wins+'</b></p>'+
-      '<p><span>Multiplayer Losses</span><b>'+stats.losses+'</b></p>';
+      '<h3>Multiplayer</h3>'+
+      '<p><span>W / L</span><b>'+stats.wins+' / '+stats.losses+'</b></p>';
   }
   let audioCtx=null;
   function playSound(type){
@@ -743,9 +810,15 @@
     }catch{}
   }
   function vibe(ms=25){ if(settings.vibe && navigator.vibrate) navigator.vibrate(ms); }
+
+  function resetMainMenuTheme(){
+    document.body.classList.remove('modeSprint','modeTime','modeLevelRush','levelRushLv1','levelRushLv2','levelRushLv3','levelRushLv4');
+    document.body.classList.add('modeNormal');
+  }
+
   function setModeTheme(mode){
-    document.body.classList.remove('modeNormal','modeSprint','modeTime','modeSurvival');
-    document.body.classList.add(mode==='sprint'?'modeSprint':mode==='time'?'modeTime':mode==='survival'?'modeSurvival':'modeNormal');
+    document.body.classList.remove('modeNormal','modeSprint','modeTime','modeLevelRush','levelRushLv1','levelRushLv2','levelRushLv3','levelRushLv4');
+    document.body.classList.add(mode==='sprint'?'modeSprint':mode==='time'?'modeTime':mode==='levelrush'?'modeLevelRush':'modeNormal');
   }
   function hideMenuSubPanels(){
     settingsPanel.style.display='none'; helpPanel.style.display='none'; statsPanel.style.display='none'; singleModePanel.style.display='none';
@@ -872,6 +945,10 @@
     drawMini(nctx,null); drawMini(n2ctx,null); drawMini(n3ctx,null); drawMini(n4ctx,null);
     scoreEl.textContent=0;
     linesEl.textContent=singleMode==='sprint'?'0/40':0;
+    if(levelBox){
+      levelBox.style.display=(!isMultiplayer && singleMode==='levelrush')?'block':'none';
+      levelDisplay.textContent=levelVal;
+    }
     if(timerBox){
       timerBox.style.display=(!isMultiplayer && (singleMode==='time'||singleMode==='sprint'))?'block':'none';
       if(window.timerLabel) timerLabel.textContent=singleMode==='sprint'?'TIME':'TIMER';
@@ -881,8 +958,13 @@
       sprintBestBox.style.display=(!isMultiplayer && singleMode==='sprint')?'block':'none';
       sprintBest.textContent=bestSprint?formatTime(bestSprint):'--';
     }
-    boardWrap.classList.remove('survival1','survival2','survival3','survival4');
-    if(!isMultiplayer && singleMode==='survival') boardWrap.classList.add('survival'+Math.min(4,levelVal));
+    boardWrap.classList.remove('levelrush1','levelrush2','levelrush3','levelrush4');
+    document.body.classList.remove('levelRushLv1','levelRushLv2','levelRushLv3','levelRushLv4');
+    if(!isMultiplayer && singleMode==='levelrush'){
+      const lv=Math.min(4,levelVal);
+      boardWrap.classList.add('levelrush'+lv);
+      document.body.classList.add('levelRushLv'+lv);
+    }
     draw();
   }
 
@@ -985,6 +1067,7 @@
           modeTimeLeft=0;
           updateUI();
           gameOverText.textContent='Time attack finished. Score '+scoreVal+' · Lines '+linesVal+'.';
+          recordSingleStats();
           running=false;
           retryBtn.style.display='block';
           continueBtn.style.display='none';
@@ -1001,7 +1084,7 @@
     if(!isMultiplayer && singleMode==='sprint' && linesVal>=40){
       running=false;
       const sprintMs=Math.round(performance.now()-sprintStartTime);
-      if(!bestSprint || sprintMs<bestSprint){ bestSprint=sprintMs; localStorage.tetrishBestSprint=bestSprint; stats.bestSprint=bestSprint; } stats.games++; stats.bestScore=Math.max(stats.bestScore,scoreVal); stats.totalLines+=linesVal; saveStats();
+      if(!bestSprint || sprintMs<bestSprint){ bestSprint=sprintMs; localStorage.tetrishBestSprint=bestSprint; stats.bestSprint=bestSprint; } recordSingleStats();
       gameOverText.textContent='Sprint finished! Score '+scoreVal+' · Time '+formatTime(sprintMs)+'.';
       retryBtn.style.display='block';
       continueBtn.style.display='none';
@@ -1118,7 +1201,13 @@
       scoreVal += ([0,100,300,500,800][c]*levelVal) + Math.max(0,comboVal-1)*50 + (b2bVal>1?200*levelVal:0) + (perfect?1200*levelVal:0);
       sendAttack(c,wasSpin,perfect);
       linesVal += c;
+      const oldLevel=levelVal;
       levelVal=1+Math.floor(linesVal/10);
+      if(singleMode==='levelrush' && !isMultiplayer && levelVal>oldLevel){
+        showClearPopup('LEVEL '+levelVal);
+        document.body.classList.remove('levelRushLv1','levelRushLv2','levelRushLv3','levelRushLv4');
+        document.body.classList.add('levelRushLv'+Math.min(4,levelVal));
+      }
       checkModeGoal();
     } else { if(lastSpin) showClearPopup('T-SPIN'); comboVal=0; }
     lastSpin=false;
@@ -1152,7 +1241,7 @@
         'players/p2/alive':true
       });
     }
-    bestVal=Math.max(bestVal,scoreVal); localStorage.neonStackBest=bestVal; stats.games++; stats.bestScore=Math.max(stats.bestScore,scoreVal); stats.totalLines+=linesVal; if(isMultiplayer) stats.losses++; saveStats();
+    bestVal=Math.max(bestVal,scoreVal); localStorage.neonStackBest=bestVal; if(isMultiplayer){ stats.losses++; stats.games++; stats.bestScore=Math.max(stats.bestScore,scoreVal); stats.totalLines+=linesVal; saveStats(); } else recordSingleStats();
     gameOverText.textContent='Score '+scoreVal+' · Lines '+linesVal+'.';
     retryBtn.style.display=isMultiplayer?'none':'block';
     rematchBtn.style.display=isMultiplayer?'block':'none'; rematchBtn.textContent='REMATCH'; rematchBtn.disabled=false;
@@ -1179,7 +1268,7 @@
     stats.games++; stats.bestScore=Math.max(stats.bestScore,scoreVal); stats.totalLines+=linesVal; saveStats();
 
     retryBtn.style.display=isMultiplayer?'none':'block';
-    rematchBtn.style.display=isMultiplayer?'block':'none'; rematchBtn.textContent='REMATCH'; rematchBtn.disabled=false;
+    rematchBtn.style.display=(isMultiplayer && !won)?'block':'none'; rematchBtn.textContent='REMATCH'; rematchBtn.disabled=false;
     continueBtn.style.display='none';
     quitBtn.style.display='block';
     quitBtn.textContent=isMultiplayer?'ROOM':'MENU';
@@ -1192,6 +1281,10 @@
     if(!isMultiplayer && singleMode==='sprint') linesEl.textContent=linesVal+'/40';
     else linesEl.textContent=linesVal;
 
+    if(levelBox){
+      levelBox.style.display=(!isMultiplayer && singleMode==='levelrush')?'block':'none';
+      levelDisplay.textContent=levelVal;
+    }
     if(timerBox){
       if(window.timerLabel) timerLabel.textContent=singleMode==='sprint'?'TIME':'TIMER';
       timerBox.style.display=(!isMultiplayer && (singleMode==='time'||singleMode==='sprint'))?'block':'none';
@@ -1202,8 +1295,13 @@
       sprintBestBox.style.display=(!isMultiplayer && singleMode==='sprint')?'block':'none';
       sprintBest.textContent=bestSprint?formatTime(bestSprint):'--';
     }
-    boardWrap.classList.remove('survival1','survival2','survival3','survival4');
-    if(!isMultiplayer && singleMode==='survival') boardWrap.classList.add('survival'+Math.min(4,levelVal));
+    boardWrap.classList.remove('levelrush1','levelrush2','levelrush3','levelrush4');
+    document.body.classList.remove('levelRushLv1','levelRushLv2','levelRushLv3','levelRushLv4');
+    if(!isMultiplayer && singleMode==='levelrush'){
+      const lv=Math.min(4,levelVal);
+      boardWrap.classList.add('levelrush'+lv);
+      document.body.classList.add('levelRushLv'+lv);
+    }
 
     drawMini(nctx,q[0]); drawMini(n2ctx,q[1]); drawMini(n3ctx,q[2]); drawMini(n4ctx,q[3]); drawMini(hpctx,holdPiece);
     if(isMultiplayer && roomId && playerSlot && running){ update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{score:scoreVal,lines:linesVal,combo:comboVal}).catch(()=>{}); }
@@ -1234,7 +1332,9 @@
       if(grid[y][x]) drawCell(grid[y][x],gx+x*cell,gy+y*cell,cell);
     }
     if(cur){
-      const gy=ghostY(); ctx.globalAlpha=.16 + Math.sin(performance.now()/140)*.04; cur.m.forEach((r,dy)=>r.forEach((v,dx)=>v&&drawCell(cur.t,Math.round(ox)+(cur.x+dx)*cell,Math.round(oy)+(gy+dy)*cell,cell))); ctx.globalAlpha=1;
+      if(settings.ghost){
+        const gy=ghostY(); ctx.globalAlpha=.16 + Math.sin(performance.now()/140)*.04; cur.m.forEach((r,dy)=>r.forEach((v,dx)=>v&&drawCell(cur.t,Math.round(ox)+(cur.x+dx)*cell,Math.round(oy)+(gy+dy)*cell,cell))); ctx.globalAlpha=1;
+      }
       cur.m.forEach((r,dy)=>r.forEach((v,dx)=>v&&drawCell(cur.t,Math.round(ox)+(cur.x+dx)*cell,Math.round(oy)+(cur.y+dy)*cell,cell)));
     }
     effects = effects.filter(e=>--e.life>0);
@@ -1289,9 +1389,10 @@
   requestAnimationFrame(loop);
 
 
-  soundToggle.checked=!!settings.sound; vibeToggle.checked=!!settings.vibe; dragRange.value=settings.drag; effectsRange.value=settings.effects;
+  soundToggle.checked=!!settings.sound; vibeToggle.checked=!!settings.vibe; ghostToggle.checked=!!settings.ghost; dragRange.value=settings.drag; effectsRange.value=settings.effects;
   soundToggle.onchange=()=>{settings.sound=soundToggle.checked;saveSettings();playSound('move')};
   vibeToggle.onchange=()=>{settings.vibe=vibeToggle.checked;saveSettings();vibe(30)};
+  ghostToggle.onchange=()=>{settings.ghost=ghostToggle.checked;saveSettings();};
   dragRange.oninput=()=>{settings.drag=+dragRange.value;saveSettings();};
   effectsRange.oninput=()=>{settings.effects=+effectsRange.value;saveSettings();};
 
@@ -1312,7 +1413,7 @@
 
 
   onePlayerBtn.onclick=()=>{ menuNameInput.style.display='none'; mainMenuButtons.style.display='none'; singleModePanel.style.display='grid'; setModeTheme('normal'); };
-  backModeBtn.onclick=()=>{ hideMenuSubPanels(); setModeTheme('normal'); };
+  backModeBtn.onclick=()=>{ hideMenuSubPanels(); resetMainMenuTheme(); };
 
   settingsBtn.onclick=()=>{ menuNameInput.style.display='none'; mainMenuButtons.style.display='none'; settingsPanel.style.display='grid'; };
   helpBtn.onclick=()=>{ menuNameInput.style.display='none'; mainMenuButtons.style.display='none'; helpPanel.style.display='grid'; };
@@ -1321,7 +1422,7 @@
   [normalModeBtn,sprintModeBtn,timeAttackBtn,survivalModeBtn].forEach(btn=>btn.addEventListener('touchstart',()=>setModeTheme(btn.dataset.modebg||'normal'),{passive:true}));
 
   normalModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='normal'; setModeTheme('normal'); startGameWithCountdown(); };
-  survivalModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='survival'; setModeTheme('survival'); startGameWithCountdown(); };
+  survivalModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='levelrush'; setModeTheme('levelrush'); startGameWithCountdown(); };
   sprintModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='sprint'; setModeTheme('sprint'); startGameWithCountdown(); };
   timeAttackBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='time'; setModeTheme('time'); startGameWithCountdown(); };
   retryBtn.onclick=()=>{ if(!isMultiplayer) startGameWithCountdown(); };
@@ -1363,6 +1464,8 @@
           pause:null,
           'players/p1/ready':false,
           'players/p2/ready':false,
+          'players/p1/rematch':false,
+          'players/p2/rematch':false,
           'players/p1/alive':true,
           'players/p2/alive':true
         });
@@ -1374,6 +1477,7 @@
       matchEnded=false;
       rematchWanted=false; rematchBtn.disabled=false;
       if(roomId && playerSlot) update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{rematch:false,ready:false}).catch(()=>{});
+      if(roomId){ update(ref(db,'rooms/'+roomId),{status:'waiting','players/p1/rematch':false,'players/p2/rematch':false}).catch(()=>{}); }
       if(playerSlot==='p1' && roomId){
         update(ref(db,'rooms/'+roomId),{
           status:'waiting',
@@ -1384,6 +1488,8 @@
           pause:null,
           'players/p1/ready':false,
           'players/p2/ready':false,
+          'players/p1/rematch':false,
+          'players/p2/rematch':false,
           'players/p1/alive':true,
           'players/p2/alive':true
         });
@@ -1396,7 +1502,7 @@
     }else{
       running=false;
       paused=false;
-      menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; show(menuScreen);
+      menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; resetMainMenuTheme(); show(menuScreen);
     }
   };
   topMenuBtn.onclick=async ()=>{
@@ -1469,8 +1575,8 @@
   canvas.addEventListener('touchcancel', () => { stopSoftDrop(); touching=false; }, {passive:false});
 
   // Firebase multiplayer
-  multiBtn.onclick=()=>{ getName(); openMulti(); };
-  backFromMultiBtn.onclick=()=>{ clearRoomUrl(); menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; show(menuScreen); };
+  multiBtn.onclick=()=>{ getName(); resetMainMenuTheme(); openMulti(); };
+  backFromMultiBtn.onclick=()=>{ clearRoomUrl(); menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; resetMainMenuTheme(); show(menuScreen); };
   showJoinBtn.onclick=()=>{ multiMenu.style.display='none'; joinPanel.style.display='block'; };
   cancelJoinBtn.onclick=()=>{ joinPanel.style.display='none'; multiMenu.style.display='grid'; };
   createRoomBtn.onclick=createRoom;
@@ -1509,6 +1615,7 @@
     roomPanel.style.display='none';
     readyBtn.textContent='READY';
     if(window.startMatchBtn){ startMatchBtn.style.display='none'; startMatchBtn.disabled=false; }
+    resetMainMenuTheme();
     show(multiScreen);
     lobbyStatus.textContent=message;
   }
@@ -1748,7 +1855,7 @@
       }
 
       if(room.status==='starting' && room.startAt && !roomStarted){
-        roomStarted=true;
+        roomStarted=true; startLocked=false;
         firebaseCountdown(room.startAt);
       }
     });
@@ -1850,7 +1957,7 @@
     pendingRoom=incomingRoom.toUpperCase().replace(/[^A-Z0-9]/g,'');
     roomInput.value=pendingRoom;
     multiBtn.textContent='JOIN ROOM';
-    setTimeout(()=>{ menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; show(menuScreen); },100);
+    setTimeout(()=>{ menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; resetMainMenuTheme(); show(menuScreen); },100);
   }
 </script>
 </body>
