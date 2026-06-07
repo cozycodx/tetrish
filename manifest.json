@@ -1,0 +1,15 @@
+{
+  "name": "TETR-ISH?",
+  "short_name": "TETR-ISH?",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#080914",
+  "theme_color": "#080914",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
