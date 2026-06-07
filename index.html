@@ -741,9 +741,21 @@
     return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+String(cs).padStart(2,'0');
   }
 
+
+  function clearGameOverlayState(){
+    gameOverlay.classList.remove('active');
+    gameOverText.textContent='';
+    matchText.textContent='';
+    retryBtn.style.display='none';
+    continueBtn.style.display='none';
+    quitBtn.style.display='none';
+    quitBtn.textContent='QUIT';
+  }
+
   function clearBoardVisuals(){
     running=false;
     paused=false;
+    clearGameOverlayState();
     effects=[];
     grid=Array.from({length:H},()=>Array(W).fill(0));
     cur=null;
@@ -829,6 +841,7 @@
 
   function startGameWithCountdown(){
     show(gameScreen);
+    clearGameOverlayState();
     clearBoardVisuals();
     running=false;
     pendingStart=true;
@@ -896,7 +909,7 @@
     gameScreen.classList.toggle('multiplayerGame', !!isMultiplayer);
     updateViewportLayout();
     show(gameScreen);
-    startCountdown.classList.remove('show'); gameOverlay.classList.remove('active'); matchText.textContent=''; paused=false; remotePauseActive=false; pauseResumeAt=0; resumeCountdownActive=false; matchEnded=false; garbageQueue=0; updateGarbageMeter(); lastIncomingGarbage=0; lastOpponentLost=false; retryBtn.style.display='none'; continueBtn.style.display='none'; quitBtn.textContent='QUIT';
+    startCountdown.classList.remove('show'); gameOverlay.classList.remove('active'); matchText.textContent=''; quitBtn.style.display='block'; paused=false; remotePauseActive=false; pauseResumeAt=0; resumeCountdownActive=false; matchEnded=false; garbageQueue=0; updateGarbageMeter(); lastIncomingGarbage=0; lastOpponentLost=false; retryBtn.style.display='none'; continueBtn.style.display='none'; quitBtn.textContent='QUIT';
     clearInterval(modeTimerId); modeTimerId=null; modeTimeLeft=singleMode==='time'?120000:0; modeEndTime=0;
     grid=Array.from({length:H},()=>Array(W).fill(0));
     bag=[]; q=[]; holdPiece=null; held=false; scoreVal=0; linesVal=0; levelVal=1; comboVal=0; b2bVal=0; lastSpin=false; moves=0; startTime=performance.now(); sprintStartTime=startTime; modeEndTime=startTime+120000;
@@ -1304,7 +1317,14 @@
   cancelJoinBtn.onclick=()=>{ joinPanel.style.display='none'; multiMenu.style.display='grid'; };
   createRoomBtn.onclick=createRoom;
   joinRoomBtn.onclick=()=>joinRoom(roomInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g,''));
-  copyRoomBtn.onclick=()=>navigator.clipboard?.writeText(roomLink.textContent);
+  copyRoomBtn.onclick=async ()=>{
+    try{
+      await navigator.clipboard?.writeText(roomLink.textContent);
+      showToast('Room link copied.');
+    }catch{
+      showToast('Could not copy link.');
+    }
+  };
   leaveRoomBtn.onclick=leaveRoom;
   readyBtn.onclick=toggleReady;
   startMatchBtn.onclick=startMatch;
@@ -1618,9 +1638,9 @@
     gameScreen.classList.add('multiplayerGame');
     updateViewportLayout();
     clearBoardVisuals();
+    clearGameOverlayState();
     running=false;
     paused=false;
-    gameOverlay.classList.remove('active');
     countdown.textContent='';
     startCountdown.classList.add('show');
 
