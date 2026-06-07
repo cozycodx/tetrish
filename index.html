@@ -13,7 +13,7 @@
   html,body{height:100%;margin:0;overflow:hidden;background:radial-gradient(circle at 50% 0%,#1b1f46,#080914 55%);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--text);touch-action:none}
   body{display:grid;place-items:center}
   #desktop{display:none;max-width:520px;padding:28px;text-align:center;background:#111429cc;border:1px solid var(--line);border-radius:24px;box-shadow:0 24px 80px #0008}
-  #app{width:100vw;height:var(--vh,100dvh);position:relative;overflow:hidden}
+  #app{width:100vw;height:var(--app-height,100dvh);position:relative;overflow:hidden}
 
 
   #toast{
@@ -241,7 +241,7 @@
   .box{border:1px solid var(--line);background:#111429aa;border-radius:16px;padding:7px;text-align:center;min-height:74px}
   .box span{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}
   .mini{width:64px;height:54px;margin:auto}
-  #controls{display:grid;grid-template-columns:1fr;gap:8px;padding-bottom:8px}
+  #controls{display:grid;grid-template-columns:1fr;gap:8px;padding-bottom:8px;flex:0 0 auto}
   .ctrl{height:58px;border-radius:18px;border:1px solid var(--line);background:#141832cc;color:#fff;font-weight:900;font-size:16px;display:grid;place-items:center;box-shadow:0 8px 24px #0004;user-select:none}
   .ctrl:active{transform:translateY(1px);background:#222957}
   #holdBtn{font-size:16px}
@@ -359,44 +359,47 @@
     .nameInput{padding:12px;margin-bottom:10px}
   }
 
-  @media (max-height: 700px){
-    #gameScreen.multiplayerGame main{grid-template-columns:1fr 82px}
-    #gameScreen.multiplayerGame .nextBox .mini{width:62px;height:30px}
-    #gameScreen.multiplayerGame .holdPreviewBox .mini{width:62px;height:30px}
-    #gameScreen.multiplayerGame .holdPreviewBox{padding:5px}
-    #gameScreen.multiplayerGame .opponentBox{font-size:10px;padding:5px}
-    #gameScreen.multiplayerGame .garbageMeter{min-height:36px;max-height:78px}
-  }
-  @media (min-width: 760px) and (max-width: 1179px){
-    #gameScreen.multiplayerGame main{grid-template-columns:minmax(0,1fr) 102px}
-    #gameScreen.multiplayerGame .nextBox .mini{width:78px;height:48px}
-    #gameScreen.multiplayerGame .holdPreviewBox .mini{width:78px;height:44px}
-    #gameScreen.multiplayerGame .garbageMeter{min-height:70px;max-height:150px}
-  }
+  /* Viewport-adaptive game layouts */
+  #gameScreen.layoutCompact{gap:5px;padding:env(safe-area-inset-top) 10px max(6px,env(safe-area-inset-bottom))}
+  #gameScreen.layoutCompact header{min-height:44px;grid-template-columns:1fr auto 44px}
+  #gameScreen.layoutCompact .brand{font-size:14px}
+  #gameScreen.layoutCompact .topMenuBtn{width:44px;height:44px;border-radius:14px;font-size:24px}
+  #gameScreen.layoutCompact main{grid-template-columns:minmax(0,1fr) 76px;gap:6px;overflow:hidden}
+  #gameScreen.layoutCompact aside{gap:5px;overflow:hidden;min-height:0}
+  #gameScreen.layoutCompact .box{min-height:auto;padding:4px;border-radius:14px}
+  #gameScreen.layoutCompact .box span{font-size:10px;margin-bottom:2px}
+  #gameScreen.layoutCompact .nextBox{gap:1px}
+  #gameScreen.layoutCompact .nextBox .mini{width:60px;height:27px}
+  #gameScreen.layoutCompact .holdPreviewBox .mini{width:60px;height:27px}
+  #gameScreen.layoutCompact .sideStatsStack{gap:5px}
+  #gameScreen.layoutCompact .statBox{min-height:42px}
+  #gameScreen.layoutCompact .statBox b{font-size:16px}
+  #gameScreen.layoutCompact #sideTimer,
+  #gameScreen.layoutCompact #sprintBest{font-size:12px;letter-spacing:-.08em}
+  #gameScreen.layoutCompact .statBox small{font-size:8px}
+  #gameScreen.layoutCompact .ctrl{height:46px;border-radius:16px;font-size:15px}
+  #gameScreen.layoutCompact #controls{padding-bottom:2px}
+  #gameScreen.layoutCompact.multiplayerGame main{grid-template-columns:minmax(0,1fr) 80px}
+  #gameScreen.layoutCompact.multiplayerGame .opponentBox{font-size:10px;padding:4px}
+  #gameScreen.layoutCompact.multiplayerGame .garbageMeter{min-height:30px;max-height:68px}
 
+  #gameScreen.layoutNormal main{grid-template-columns:minmax(0,1fr) 88px}
+  #gameScreen.layoutNormal .nextBox .mini{width:72px;height:42px}
+  #gameScreen.layoutNormal .holdPreviewBox .mini{width:72px;height:42px}
 
-  #gameScreen.compactGame{gap:6px}
-  #gameScreen.compactGame header{min-height:46px;grid-template-columns:1fr auto 46px}
-  #gameScreen.compactGame .brand{font-size:15px}
-  #gameScreen.compactGame .topMenuBtn{width:46px;height:46px;border-radius:14px;font-size:24px}
-  #gameScreen.compactGame main{grid-template-columns:minmax(0,1fr) 78px;gap:6px}
-  #gameScreen.compactGame aside{gap:5px}
-  #gameScreen.compactGame .box{border-radius:14px;padding:4px;min-height:auto}
-  #gameScreen.compactGame .box span{font-size:10px;margin-bottom:2px}
-  #gameScreen.compactGame .nextBox{gap:1px}
-  #gameScreen.compactGame .nextBox .mini{width:62px;height:28px}
-  #gameScreen.compactGame .holdPreviewBox .mini{width:62px;height:28px}
-  #gameScreen.compactGame .sideStatsStack{gap:5px}
-  #gameScreen.compactGame .statBox{min-height:44px}
-  #gameScreen.compactGame .statBox b{font-size:17px}
-  #gameScreen.compactGame #sideTimer,
-  #gameScreen.compactGame #sprintBest{font-size:13px;letter-spacing:-.08em}
-  #gameScreen.compactGame .statBox small{font-size:9px}
-  #gameScreen.compactGame .ctrl{height:48px;border-radius:16px}
-  #gameScreen.compactGame #controls{padding-bottom:2px}
-  #gameScreen.compactGame.multiplayerGame main{grid-template-columns:minmax(0,1fr) 82px}
-  #gameScreen.compactGame .opponentBox{font-size:10px;padding:4px}
-  #gameScreen.compactGame .garbageMeter{min-height:34px;max-height:72px}
+  #gameScreen.layoutLarge{max-width:720px;margin:auto;padding:env(safe-area-inset-top) 16px max(12px,env(safe-area-inset-bottom))}
+  #gameScreen.layoutLarge header{min-height:58px;grid-template-columns:1fr auto 58px}
+  #gameScreen.layoutLarge .brand{font-size:20px}
+  #gameScreen.layoutLarge .topMenuBtn{width:58px;height:58px}
+  #gameScreen.layoutLarge main{grid-template-columns:minmax(0,1fr) 104px;gap:10px}
+  #gameScreen.layoutLarge .box{padding:7px}
+  #gameScreen.layoutLarge .nextBox .mini{width:86px;height:54px}
+  #gameScreen.layoutLarge .holdPreviewBox .mini{width:86px;height:50px}
+  #gameScreen.layoutLarge .statBox{min-height:58px}
+  #gameScreen.layoutLarge .statBox b{font-size:20px}
+  #gameScreen.layoutLarge #sideTimer,
+  #gameScreen.layoutLarge #sprintBest{font-size:16px}
+  #gameScreen.layoutLarge .ctrl{height:62px;font-size:18px}
 
   #boardWrap.shake{animation:shake .14s linear 1}
   @keyframes shake{25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
@@ -423,8 +426,8 @@
 
   @media (max-height: 700px){
     .heroTitle{font-size:46px}.panel{padding:18px 16px}.hint{margin-top:10px}
-    #gameScreen{gap:6px}header{min-height:46px;grid-template-columns:1fr auto 46px}.topMenuBtn{width:46px;height:46px}.ctrl{height:48px}#controls{padding-bottom:2px}
-    aside{gap:5px}.sideStatsStack{gap:5px}.statBox{min-height:44px}.statBox b{font-size:17px}#sideTimer,#sprintBest{font-size:13px}.box{min-height:auto;padding:4px}.nextBox{min-height:auto;height:auto}.mini{width:62px;height:38px}.nextBox .mini{width:62px;height:30px}.holdPreviewBox .mini{width:62px;height:30px}
+    #gameScreen{gap:6px}header{min-height:48px;grid-template-columns:1fr auto 48px}.topMenuBtn{width:48px;height:48px}.ctrl{height:52px}#controls{padding-bottom:4px}
+    aside{gap:6px}.sideStatsStack{gap:6px}.statBox{min-height:48px}.statBox b{font-size:18px}#sideTimer,#sprintBest{font-size:14px}.box{min-height:64px;padding:5px}.nextBox{min-height:auto;height:auto}.mini{width:64px;height:44px}.nextBox .mini{width:64px;height:42px}
   }
   @media (min-width: 1180px) and (hover:hover) and (pointer:fine){
     #app{display:none}#desktop{display:block}
@@ -666,7 +669,7 @@
     [menuScreen,multiScreen,gameScreen].forEach(s=>s.classList.remove('active'));
     screen.classList.add('active');
     if(screen!==gameScreen){ gameScreen.classList.remove('multiplayerGame'); startCountdown.classList.remove('show'); }
-    setTimeout(()=>{ updateViewportVars(); resize(); },50);
+    setTimeout(()=>{ updateViewportLayout(); resize(); },50);
   }
 
   function getName(){
@@ -696,18 +699,35 @@
   addEventListener('resize',resize);
 
 
-  function updateViewportVars(){
+  function updateViewportLayout(){
     const vv = window.visualViewport;
-    const h = vv ? vv.height : window.innerHeight;
-    document.documentElement.style.setProperty('--vh', h + 'px');
-    gameScreen.classList.toggle('compactGame', h < 740);
-    setTimeout(resize, 30);
+    const vw = Math.max(1, vv ? vv.width : window.innerWidth);
+    const vh = Math.max(1, vv ? vv.height : window.innerHeight);
+
+    document.documentElement.style.setProperty('--app-height', vh + 'px');
+
+    gameScreen.classList.remove('layoutCompact','layoutNormal','layoutLarge');
+
+    const isTabletLike = vw >= 700 && vh >= 760;
+    const isShort = vh < 740;
+    const isNarrow = vw < 380;
+
+    if(isTabletLike){
+      gameScreen.classList.add('layoutLarge');
+    }else if(isShort || isNarrow){
+      gameScreen.classList.add('layoutCompact');
+    }else{
+      gameScreen.classList.add('layoutNormal');
+    }
+
+    requestAnimationFrame(resize);
   }
-  updateViewportVars();
-  window.visualViewport?.addEventListener('resize', updateViewportVars);
-  window.visualViewport?.addEventListener('scroll', updateViewportVars);
-  window.addEventListener('orientationchange', () => setTimeout(updateViewportVars, 250));
-  window.addEventListener('resize', updateViewportVars);
+
+  updateViewportLayout();
+  window.visualViewport?.addEventListener('resize', updateViewportLayout);
+  window.visualViewport?.addEventListener('scroll', updateViewportLayout);
+  window.addEventListener('resize', updateViewportLayout);
+  window.addEventListener('orientationchange', () => setTimeout(updateViewportLayout, 250));
 
 
 
@@ -816,6 +836,7 @@
     pendingStart=false;
     if(window.opponentHud) opponentHud.style.display=isMultiplayer?'block':'none';
     gameScreen.classList.toggle('multiplayerGame', !!isMultiplayer);
+    updateViewportLayout();
     show(gameScreen);
     startCountdown.classList.remove('show'); gameOverlay.classList.remove('active'); matchText.textContent=''; paused=false; matchEnded=false; garbageQueue=0; updateGarbageMeter(); lastIncomingGarbage=0; lastOpponentLost=false; retryBtn.style.display='none'; continueBtn.style.display='none'; quitBtn.textContent='QUIT';
     clearInterval(modeTimerId); modeTimerId=null; modeTimeLeft=singleMode==='time'?120000:0; modeEndTime=0;
@@ -1467,6 +1488,7 @@
   function firebaseCountdown(startAt){
     show(gameScreen);
     gameScreen.classList.add('multiplayerGame');
+    updateViewportLayout();
     clearBoardVisuals();
     running=false;
     paused=false;
