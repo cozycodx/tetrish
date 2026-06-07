@@ -15,11 +15,62 @@
   #desktop{display:none;max-width:520px;padding:28px;text-align:center;background:#111429cc;border:1px solid var(--line);border-radius:24px;box-shadow:0 24px 80px #0008}
   #app{width:100vw;height:100dvh;position:relative;overflow:hidden}
 
+
+  #toast{
+    position:fixed;
+    left:50%;
+    top:calc(env(safe-area-inset-top) + 14px);
+    transform:translate(-50%,-16px);
+    z-index:999;
+    max-width:calc(100vw - 36px);
+    padding:11px 16px;
+    border-radius:16px;
+    background:#10142dcc;
+    border:1px solid #334155;
+    color:#fff;
+    font-weight:900;
+    font-size:13px;
+    box-shadow:0 14px 40px #0008;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+
   .screen{position:absolute;inset:0;width:100%;height:100%;padding:env(safe-area-inset-top) 18px calc(env(safe-area-inset-bottom) + 18px);display:none}
   .screen.active{display:flex}
   #menuScreen,#multiScreen{align-items:center;justify-content:center;text-align:center}
+  #menuScreen{align-items:center;padding-top:env(safe-area-inset-top)}
 
 
+
+
+  #menuScreen .bgBlocks::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+      linear-gradient(180deg,transparent,rgba(34,211,238,.05),transparent),
+      radial-gradient(circle at 30% 8%,rgba(139,92,246,.16),transparent 18%),
+      radial-gradient(circle at 74% 92%,rgba(34,211,238,.10),transparent 20%);
+    animation:bgPulse 4s ease-in-out infinite;
+  }
+  #menuScreen .bgBlocks::before{
+    content:"";
+    position:absolute;
+    left:12%;
+    top:8%;
+    width:76%;
+    height:84%;
+    border-radius:24px;
+    border:1px solid rgba(139,92,246,.10);
+    box-shadow:inset 0 0 40px rgba(34,211,238,.05),0 0 60px rgba(139,92,246,.08);
+    transform:skewY(-3deg);
+  }
+  @keyframes bgPulse{
+    0%,100%{opacity:.55}
+    50%{opacity:1}
+  }
 
   .bgBlocks{position:absolute;inset:0;overflow:hidden;pointer-events:none}
   .bgBlocks i{
@@ -72,15 +123,7 @@
   }
 
   .panel{position:relative;overflow:hidden}
-  .menuGlow{
-    position:absolute;
-    width:220px;height:220px;
-    border-radius:50%;
-    background:radial-gradient(circle,rgba(34,211,238,.20),transparent 65%);
-    left:50%;top:-70px;transform:translateX(-50%);
-    pointer-events:none;
-  }
-  .menuDecor{display:flex;justify-content:center;gap:8px;margin:0 0 22px}
+  .menuDecor{display:flex;justify-content:center;gap:8px;margin:0 0 14px}
   .menuDecor span{width:24px;height:24px;border-radius:6px;background:#22d3ee;box-shadow:0 0 18px rgba(34,211,238,.35)}
   .menuDecor span:nth-child(2){background:#a78bfa}
   .menuDecor span:nth-child(3){background:#facc15}
@@ -116,12 +159,54 @@
   }
   #clearPopup.show{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
 
+  #menuScreen .panel > *{position:relative;z-index:1}
+  #menuScreen .panel{padding:24px 20px;max-height:none}
   .panel{width:100%;max-width:390px;border:1px solid rgba(139,92,246,.32);background:linear-gradient(180deg,rgba(17,20,41,.94),rgba(5,7,17,.96));border-radius:28px;padding:26px 20px;box-shadow:0 30px 100px #0009,0 0 80px rgba(34,211,238,.08),inset 0 0 0 1px #ffffff08}
-  .heroTitle{margin:0;font-size:56px;line-height:.9;font-weight:950;letter-spacing:.08em;background:linear-gradient(180deg,#fff,#aebcff 72%,#7dd3fc);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 40px rgba(139,92,246,.25)}
-  .heroSub{margin:10px 0 22px;color:#aab5d1;font-size:12px;letter-spacing:.26em;text-transform:uppercase}
-  .nameInput,.roomInput{width:100%;border-radius:16px;border:1px solid #334155;background:#080b18;color:white;font-size:16px;padding:14px;margin-bottom:14px;outline:none;text-align:center}
+  .heroTitle{margin:0;font-size:50px;line-height:.9;font-weight:950;letter-spacing:.08em;background:linear-gradient(180deg,#fff,#aebcff 72%,#7dd3fc);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 40px rgba(139,92,246,.25)}
+  .heroSub{margin:8px 0 14px;color:#aab5d1;font-size:12px;letter-spacing:.26em;text-transform:uppercase}
+  .nameInput,.roomInput{width:100%;border-radius:16px;border:1px solid #334155;background:#080b18;color:white;font-size:16px;padding:13px;margin-bottom:12px;outline:none;text-align:center}
+
+  .modeBtn{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center}
+  .modeBtn small{font-size:10px;line-height:1.25;font-weight:700;color:#dbeafe;opacity:.82;letter-spacing:.02em}
+  #menuScreen .panel::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+      radial-gradient(circle at 50% 12%,rgba(34,211,238,.10),transparent 22%),
+      radial-gradient(circle at 82% 38%,rgba(167,139,250,.09),transparent 25%),
+      radial-gradient(circle at 50% 100%,rgba(52,211,153,.09),transparent 30%);
+    pointer-events:none;
+  }
+  #menuScreen .panel::after{
+    content:"";
+    position:absolute;
+    left:18px;right:18px;bottom:18px;height:1px;
+    background:linear-gradient(90deg,transparent,#22d3ee,#8b5cf6,transparent);
+    opacity:.65;
+    box-shadow:0 0 18px rgba(34,211,238,.45);
+    pointer-events:none;
+  }
+  .heroTitle::after{content:"";display:block;width:72px;height:4px;margin:10px auto 0;border-radius:999px;background:linear-gradient(90deg,#8b5cf6,#22d3ee,#34d399);box-shadow:0 0 20px rgba(34,211,238,.45)}
+  .tapFx{
+    position:absolute;
+    width:18px;height:18px;
+    border-radius:50%;
+    border:2px solid rgba(34,211,238,.9);
+    background:rgba(34,211,238,.10);
+    box-shadow:0 0 28px rgba(34,211,238,.85), inset 0 0 14px rgba(139,92,246,.35);
+    transform:translate(-50%,-50%) scale(.5);
+    opacity:.9;
+    pointer-events:none;
+    animation:tapBurst .55s ease-out forwards;
+    z-index:20;
+  }
+  @keyframes tapBurst{
+    to{transform:translate(-50%,-50%) scale(4.2);opacity:0}
+  }
+
   .menuBtns{display:grid;gap:10px}
-  button{border:0;border-radius:18px;background:linear-gradient(135deg,#8b5cf6,#22d3ee);color:white;font-weight:900;padding:15px 18px;font-size:16px;box-shadow:0 10px 30px #0006}
+  button{border:0;border-radius:18px;background:linear-gradient(135deg,#8b5cf6,#22d3ee);color:white;font-weight:900;padding:14px 18px;font-size:16px;box-shadow:0 10px 30px #0006}
   button:active{transform:translateY(1px)}
   button:disabled{opacity:.5}
   .secondaryBtn{background:linear-gradient(135deg,#334155,#475569)}
@@ -145,7 +230,7 @@
   .brand{font-weight:900;letter-spacing:.08em;font-size:16px}
   .topStats{display:flex;gap:8px;justify-content:center}.pill{border:1px solid var(--line);background:#111429cc;border-radius:16px;padding:7px 10px;font-size:12px;color:var(--muted)}
   .pill b{display:block;color:var(--text);font-size:16px;line-height:1.1}
-  main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 78px;gap:8px}
+  main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 88px;gap:8px}
   #boardWrap{position:relative;border:1px solid #293052;border-radius:18px;background:#050711cc;box-shadow:0 14px 40px #0006;overflow:hidden;aspect-ratio:10/20;height:100%;width:auto;max-width:100%;justify-self:center}
   canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
   #gameOverlay{position:absolute;inset:0;display:none;place-items:center;background:#050711aa;backdrop-filter:blur(8px);text-align:center;padding:22px;z-index:5}
@@ -181,7 +266,30 @@
   #gameOverlay button{width:170px;display:block;margin-left:auto;margin-right:auto}
   #gameOverlay #quitBtn{margin-top:10px}
   .nextBox{min-height:auto;height:auto;display:flex;flex-direction:column;justify-content:flex-start;gap:5px}
-  .nextBox .mini{width:64px;height:42px}
+  .nextBox .mini{width:72px;height:42px}
+
+
+
+  .holdPreviewBox{min-height:64px}
+  .holdPreviewBox .mini{width:72px;height:42px}
+  #gameScreen.multiplayerGame .holdPreviewBox{
+    min-height:auto;
+    height:auto;
+    padding:6px;
+  }
+  #gameScreen.multiplayerGame .holdPreviewBox .mini{
+    width:72px;
+    height:42px;
+  }
+
+
+  .sideStatsStack{display:grid;gap:8px;min-width:0}
+  .statBox{min-height:58px;overflow:hidden}
+  .statBox b{display:block;font-size:20px;color:#fff;line-height:1.15;white-space:nowrap;letter-spacing:-.03em}
+  .statBox small{display:block;color:#94a3b8;font-size:10px;margin-top:2px}
+  #sideTimer,#sprintBest{font-size:16px;letter-spacing:-.08em}
+  #gameScreen.multiplayerGame .sideStatsStack{display:grid}
+
   .opponentBox{font-size:12px}
   .opponentBox b{font-size:17px}
   .opponentBox small{display:block;color:#94a3b8;margin-top:4px}
@@ -212,7 +320,7 @@
     align-self:stretch;
     min-height:0;
     display:grid;
-    grid-template-rows:auto minmax(0,1fr);
+    grid-template-rows:auto auto auto minmax(0,1fr);
     gap:8px;
   }
   #gameScreen.multiplayerGame .nextBox{
@@ -240,15 +348,29 @@
     min-height:44px;
     max-height:112px;
   }
+
+  @media (max-height: 760px){
+    #menuScreen{align-items:center;padding-top:env(safe-area-inset-top)}
+    #menuScreen .panel{padding:20px}
+    .heroTitle{font-size:46px}
+    .heroSub{margin:6px 0 12px}
+    .menuDecor{margin-bottom:12px}
+    .menuDecor span{width:20px;height:20px}
+    .nameInput{padding:12px;margin-bottom:10px}
+  }
+
   @media (max-height: 700px){
-    #gameScreen.multiplayerGame main{grid-template-columns:1fr 82px}
+    #gameScreen.multiplayerGame main{grid-template-columns:1fr 88px}
     #gameScreen.multiplayerGame .nextBox .mini{width:62px;height:38px}
+    #gameScreen.multiplayerGame .holdPreviewBox .mini{width:62px;height:36px}
+    #gameScreen.multiplayerGame .holdPreviewBox{padding:5px}
     #gameScreen.multiplayerGame .opponentBox{font-size:10px;padding:5px}
     #gameScreen.multiplayerGame .garbageMeter{min-height:42px;max-height:90px}
   }
   @media (min-width: 760px) and (max-width: 1179px){
-    #gameScreen.multiplayerGame main{grid-template-columns:minmax(0,1fr) 96px}
+    #gameScreen.multiplayerGame main{grid-template-columns:minmax(0,1fr) 102px}
     #gameScreen.multiplayerGame .nextBox .mini{width:78px;height:48px}
+    #gameScreen.multiplayerGame .holdPreviewBox .mini{width:78px;height:44px}
     #gameScreen.multiplayerGame .garbageMeter{min-height:70px;max-height:150px}
   }
 
@@ -258,7 +380,7 @@
   @media (min-width: 760px) and (max-width: 1179px){
     #app{max-width:620px;margin:auto}
     #gameScreen{padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);gap:8px}
-    main{grid-template-columns:minmax(0,1fr) 88px;gap:8px}
+    main{grid-template-columns:minmax(0,1fr) 94px;gap:8px}
     #boardWrap{height:100%;width:auto;max-width:100%;aspect-ratio:10/20}
     header{grid-template-columns:1fr auto 56px}
     .topMenuBtn{width:56px;height:56px}
@@ -267,6 +389,8 @@
     .pill b{font-size:18px}
     .ctrl{height:62px;font-size:18px}
     aside{gap:6px;min-height:0}
+    .sideStatsStack{gap:6px}
+    .statBox{min-height:50px}
     .box{min-height:54px;padding:6px}
     .nextBox{min-height:auto;height:auto;gap:3px}
     .nextBox .mini{width:72px;height:42px}
@@ -276,7 +400,7 @@
   @media (max-height: 700px){
     .heroTitle{font-size:46px}.panel{padding:18px 16px}.hint{margin-top:10px}
     #gameScreen{gap:6px}header{min-height:48px;grid-template-columns:1fr auto 48px}.topMenuBtn{width:48px;height:48px}.ctrl{height:52px}#controls{padding-bottom:4px}
-    aside{gap:6px}.box{min-height:64px;padding:5px}.nextBox{min-height:auto;height:auto}.mini{width:58px;height:44px}.nextBox .mini{width:58px;height:42px}
+    aside{gap:6px}.sideStatsStack{gap:6px}.statBox{min-height:48px}.statBox b{font-size:18px}#sideTimer,#sprintBest{font-size:14px}.box{min-height:64px;padding:5px}.nextBox{min-height:auto;height:auto}.mini{width:64px;height:44px}.nextBox .mini{width:64px;height:42px}
   }
   @media (min-width: 1180px) and (hover:hover) and (pointer:fine){
     #app{display:none}#desktop{display:block}
@@ -289,13 +413,13 @@
   <p>This game is intentionally locked to phones/tablets with touch controls. Open it on a mobile browser to play.</p>
 </section>
 
+<div id="toast"></div>
 <div id="app">
   <section id="menuScreen" class="screen active">
     <div class="bgBlocks">
       <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
     </div>
     <div class="panel">
-      <div class="menuGlow"></div>
       <h1 class="heroTitle">TETRISH</h1>
       <div class="heroSub">STACK FAST • CLEAR HARD</div>
       <div class="menuDecor">
@@ -307,9 +431,9 @@
         <button id="multiBtn" class="secondaryBtn">MULTIPLAYER</button>
       </div>
       <div id="singleModePanel" class="menuBtns" style="display:none">
-        <button id="normalModeBtn">NORMAL</button>
-        <button id="sprintModeBtn" class="secondaryBtn">SPRINT 40 LINES</button>
-        <button id="timeAttackBtn" class="secondaryBtn">TIME ATTACK 2:00</button>
+        <button id="normalModeBtn" class="modeBtn">NORMAL<small>Classic endless play. Clear lines and survive.</small></button>
+        <button id="sprintModeBtn" class="secondaryBtn modeBtn">SPRINT<small>Clear 40 lines as fast as possible.</small></button>
+        <button id="timeAttackBtn" class="secondaryBtn modeBtn">TIME ATTACK<small>Score as much as you can in 2 minutes.</small></button>
         <button id="backModeBtn" class="dangerBtn">BACK</button>
       </div>
     </div>
@@ -364,10 +488,7 @@
   <section id="gameScreen">
     <header>
       <div class="brand">TETRISH <span id="playerName" style="font-size:12px;opacity:.8"></span></div>
-      <div class="topStats">
-        <div class="pill">SCORE <b id="score">0</b></div>
-        <div class="pill">LINES <b id="lines">0</b></div>
-      </div>
+      <div></div>
       <button id="topMenuBtn" class="topMenuBtn" aria-label="Menu">☰</button>
     </header>
 
@@ -390,6 +511,26 @@
           <canvas id="next2" class="mini"></canvas>
           <canvas id="next3" class="mini"></canvas>
           <canvas id="next4" class="mini"></canvas>
+        </div>
+        <div class="box holdPreviewBox"><span>HOLD</span><canvas id="holdPreview" class="mini"></canvas></div>
+        <div id="sideStatsBox" class="sideStatsStack">
+          <div class="box statBox">
+            <span>SCORE</span>
+            <b id="score">0</b>
+          </div>
+          <div class="box statBox">
+            <span>LINES</span>
+            <b id="lines">0</b>
+          </div>
+          <div id="timerBox" class="box statBox" style="display:none">
+            <span id="timerLabel">TIMER</span>
+            <b id="sideTimer">00:00.00</b>
+          </div>
+          <div id="sprintBestBox" class="box statBox" style="display:none">
+            <span>BEST</span>
+            <b id="sprintBest">--</b>
+            <small>SPRINT</small>
+          </div>
         </div>
         <div id="opponentHud" class="box opponentBox" style="display:none">
           <span>OPPONENT</span>
@@ -465,6 +606,7 @@
   const n2cv=document.getElementById('next2'), n2ctx=n2cv.getContext('2d');
   const n3cv=document.getElementById('next3'), n3ctx=n3cv.getContext('2d');
   const n4cv=document.getElementById('next4'), n4ctx=n4cv.getContext('2d');
+  const hpv=document.getElementById('holdPreview'), hpctx=hpv.getContext('2d');
   const hctx=null;
   const scoreEl=score, linesEl=lines;
   const gameOverlay=document.getElementById('gameOverlay');
@@ -483,15 +625,23 @@
   let grid, bag=[], q=[], cur, holdPiece=null, held=false, scoreVal=0, linesVal=0, levelVal=1, bestVal=+localStorage.neonStackBest||0;
   let last=0, drop=0, running=false, moves=0, startTime=0, cell=20, ox=0, oy=0; let effects=[], comboVal=0, b2bVal=0, lastSpin=false;
   let player='Guest';
-  let pendingStart=false, singleMode='normal', modeTimeLeft=0, modeTimerId=null;
+  let pendingStart=false, singleMode='normal', modeTimeLeft=0, modeEndTime=0, modeTimerId=null, sprintStartTime=0, bestSprint=+(localStorage.tetrishBestSprint||0);
 
   let roomId='', playerId='', playerSlot='', roomUnsub=null, roomStarted=false, isMultiplayer=false, matchEnded=false, garbageQueue=0, lastIncomingGarbage=0, lastOpponentLost=false, paused=false, currentRoom=null, startLocked=false, serverOffset=0, pendingRoom='';
 
 
+
+  function showToast(message){
+    toast.textContent=message;
+    toast.classList.add('show');
+    clearTimeout(showToast.t);
+    showToast.t=setTimeout(()=>toast.classList.remove('show'),1800);
+  }
+
   function show(screen){
     [menuScreen,multiScreen,gameScreen].forEach(s=>s.classList.remove('active'));
     screen.classList.add('active');
-    if(screen!==gameScreen) gameScreen.classList.remove('multiplayerGame');
+    if(screen!==gameScreen){ gameScreen.classList.remove('multiplayerGame'); startCountdown.classList.remove('show'); }
     setTimeout(resize,50);
   }
 
@@ -511,7 +661,7 @@
     ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
     cell=Math.floor(Math.min((r.width-18)/W, (r.height-18)/VISIBLE));
     ox=Math.floor((r.width-cell*W)/2); oy=Math.floor((r.height-cell*VISIBLE)/2);
-    [ncv,n2cv,n3cv,n4cv].forEach(c=>{
+    [ncv,n2cv,n3cv,n4cv,hpv].forEach(c=>{
       const rr=c.getBoundingClientRect();
       c.width=Math.max(1,Math.floor(rr.width*devicePixelRatio));
       c.height=Math.max(1,Math.floor(rr.height*devicePixelRatio));
@@ -522,8 +672,47 @@
   addEventListener('resize',resize);
 
 
+
+  function formatClock(ms){
+    ms=Math.max(0,Math.floor(ms));
+    const totalSec=Math.floor(ms/1000);
+    const m=Math.floor(totalSec/60);
+    const s=totalSec%60;
+    const cs=Math.floor((ms%1000)/10);
+    return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+String(cs).padStart(2,'0');
+  }
+
+  function clearBoardVisuals(){
+    running=false;
+    paused=false;
+    effects=[];
+    grid=Array.from({length:H},()=>Array(W).fill(0));
+    cur=null;
+    holdPiece=null;
+    scoreVal=0;
+    linesVal=0;
+    comboVal=0;
+    b2bVal=0;
+    lastSpin=false;
+    drawMini(hpctx,null);
+    drawMini(nctx,null); drawMini(n2ctx,null); drawMini(n3ctx,null); drawMini(n4ctx,null);
+    scoreEl.textContent=0;
+    linesEl.textContent=singleMode==='sprint'?'0/40':0;
+    if(timerBox){
+      timerBox.style.display=(!isMultiplayer && (singleMode==='time'||singleMode==='sprint'))?'block':'none';
+      if(window.timerLabel) timerLabel.textContent=singleMode==='sprint'?'TIME':'TIMER';
+      sideTimer.textContent=singleMode==='time'?formatClock(120000):formatClock(0);
+    }
+    if(sprintBestBox){
+      sprintBestBox.style.display=(!isMultiplayer && singleMode==='sprint')?'block':'none';
+      sprintBest.textContent=bestSprint?formatTime(bestSprint):'--';
+    }
+    draw();
+  }
+
   function startGameWithCountdown(){
     show(gameScreen);
+    clearBoardVisuals();
     running=false;
     pendingStart=true;
     let n=3;
@@ -543,14 +732,21 @@
   }
 
 
+
+  function formatTime(ms){
+    if(!ms) return '--';
+    return formatClock(ms);
+  }
+
   function startModeTimer(){
     clearInterval(modeTimerId);
-    if(singleMode==='time' && !isMultiplayer){
-      modeTimerId=setInterval(()=>{
-        if(!running || paused) return;
-        modeTimeLeft--;
+    modeTimerId=setInterval(()=>{
+      if(!running || paused) return;
+      if(singleMode==='time' && !isMultiplayer){
+        modeTimeLeft=Math.max(0,modeEndTime-performance.now());
         if(modeTimeLeft<=0){
           modeTimeLeft=0;
+          updateUI();
           gameOverText.textContent='Time attack finished. Score '+scoreVal+' · Lines '+linesVal+'.';
           running=false;
           retryBtn.style.display='block';
@@ -559,14 +755,17 @@
           gameOverlay.classList.add('active');
           clearInterval(modeTimerId);
         }
-      },1000);
-    }
+      }
+      if(singleMode==='sprint' && !isMultiplayer) updateUI();
+    },33);
   }
 
   function checkModeGoal(){
     if(!isMultiplayer && singleMode==='sprint' && linesVal>=40){
       running=false;
-      gameOverText.textContent='Sprint finished! Score '+scoreVal+' · Time '+Math.round((performance.now()-startTime)/1000)+'s.';
+      const sprintMs=Math.round(performance.now()-sprintStartTime);
+      if(!bestSprint || sprintMs<bestSprint){ bestSprint=sprintMs; localStorage.tetrishBestSprint=bestSprint; }
+      gameOverText.textContent='Sprint finished! Score '+scoreVal+' · Time '+formatTime(sprintMs)+'.';
       retryBtn.style.display='block';
       continueBtn.style.display='none';
       quitBtn.textContent='MENU';
@@ -580,9 +779,9 @@
     gameScreen.classList.toggle('multiplayerGame', !!isMultiplayer);
     show(gameScreen);
     startCountdown.classList.remove('show'); gameOverlay.classList.remove('active'); matchText.textContent=''; paused=false; matchEnded=false; garbageQueue=0; updateGarbageMeter(); lastIncomingGarbage=0; lastOpponentLost=false; retryBtn.style.display='none'; continueBtn.style.display='none'; quitBtn.textContent='QUIT';
-    clearInterval(modeTimerId); modeTimerId=null; modeTimeLeft=singleMode==='time'?120:0;
+    clearInterval(modeTimerId); modeTimerId=null; modeTimeLeft=singleMode==='time'?120000:0; modeEndTime=0;
     grid=Array.from({length:H},()=>Array(W).fill(0));
-    bag=[]; q=[]; holdPiece=null; held=false; scoreVal=0; linesVal=0; levelVal=1; comboVal=0; b2bVal=0; lastSpin=false; moves=0; startTime=performance.now();
+    bag=[]; q=[]; holdPiece=null; held=false; scoreVal=0; linesVal=0; levelVal=1; comboVal=0; b2bVal=0; lastSpin=false; moves=0; startTime=performance.now(); sprintStartTime=startTime; modeEndTime=startTime+120000;
     while(q.length<5) q.push(take());
     spawn(); running=true; startModeTimer(); if(isMultiplayer && roomId && playerSlot){ update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{alive:true,score:0,lines:0,combo:0}); } updateUI(); resize();
   }
@@ -696,12 +895,22 @@
   function hold(){
     if(!running||paused||held)return;
     const t=cur.t; if(holdPiece){cur={t:holdPiece,m:clone(shapes[holdPiece]),x:3,y:0}; holdPiece=t} else {holdPiece=t; spawn()}
-    held=true; moves++; draw();
+    held=true; moves++; updateUI(); draw();
   }
   async function gameOver(){
     if(matchEnded) return;
     running=false; matchEnded=true;
-    if(isMultiplayer && roomId && playerSlot){ await update(ref(db,'rooms/'+roomId),{status:'finished', loser:playerSlot, winner:playerSlot==='p1'?'p2':'p1'}); }
+    if(isMultiplayer && roomId && playerSlot){
+      await update(ref(db,'rooms/'+roomId),{
+        status:'finished',
+        loser:playerSlot,
+        winner:playerSlot==='p1'?'p2':'p1',
+        'players/p1/ready':false,
+        'players/p2/ready':false,
+        'players/p1/alive':true,
+        'players/p2/alive':true
+      });
+    }
     bestVal=Math.max(bestVal,scoreVal); localStorage.neonStackBest=bestVal;
     gameOverText.textContent='Score '+scoreVal+' · Lines '+linesVal+'.';
     retryBtn.style.display=isMultiplayer?'none':'block'; continueBtn.style.display='none'; quitBtn.textContent=isMultiplayer?'ROOM':'MENU';
@@ -721,10 +930,21 @@
 
   function updateUI(){
     scoreEl.textContent=scoreVal;
-    if(!isMultiplayer && singleMode==='time') linesEl.textContent=Math.max(0,modeTimeLeft)+'s';
-    else if(!isMultiplayer && singleMode==='sprint') linesEl.textContent=linesVal+'/40';
+    if(!isMultiplayer && singleMode==='sprint') linesEl.textContent=linesVal+'/40';
     else linesEl.textContent=linesVal;
-    drawMini(nctx,q[0]); drawMini(n2ctx,q[1]); drawMini(n3ctx,q[2]); drawMini(n4ctx,q[3]);
+
+    if(timerBox){
+      if(window.timerLabel) timerLabel.textContent=singleMode==='sprint'?'TIME':'TIMER';
+      timerBox.style.display=(!isMultiplayer && (singleMode==='time'||singleMode==='sprint'))?'block':'none';
+      if(singleMode==='time') sideTimer.textContent=formatClock(modeTimeLeft);
+      else if(singleMode==='sprint') sideTimer.textContent=formatClock(performance.now()-sprintStartTime);
+    }
+    if(sprintBestBox){
+      sprintBestBox.style.display=(!isMultiplayer && singleMode==='sprint')?'block':'none';
+      sprintBest.textContent=bestSprint?formatTime(bestSprint):'--';
+    }
+
+    drawMini(nctx,q[0]); drawMini(n2ctx,q[1]); drawMini(n3ctx,q[2]); drawMini(n4ctx,q[3]); drawMini(hpctx,holdPiece);
     if(isMultiplayer && roomId && playerSlot && running){ update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{score:scoreVal,lines:linesVal,combo:comboVal}).catch(()=>{}); }
   }
   function drawCell(c,x,y,s,context=ctx){
@@ -795,6 +1015,18 @@
   }
   requestAnimationFrame(loop);
 
+
+  menuScreen.addEventListener('pointerdown', e=>{
+    if(!menuScreen.classList.contains('active')) return;
+    const fx=document.createElement('i');
+    fx.className='tapFx';
+    fx.style.left=e.clientX+'px';
+    fx.style.top=e.clientY+'px';
+    menuScreen.appendChild(fx);
+    setTimeout(()=>fx.remove(),600);
+  });
+
+
   onePlayerBtn.onclick=()=>{ menuNameInput.style.display='none'; mainMenuButtons.style.display='none'; singleModePanel.style.display='grid'; };
   backModeBtn.onclick=()=>{ menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; };
   normalModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='normal'; startGameWithCountdown(); };
@@ -808,7 +1040,11 @@
         await update(ref(db,'rooms/'+roomId),{
           status:'finished',
           loser:playerSlot,
-          winner:playerSlot==='p1'?'p2':'p1'
+          winner:playerSlot==='p1'?'p2':'p1',
+          'players/p1/ready':false,
+          'players/p2/ready':false,
+          'players/p1/alive':true,
+          'players/p2/alive':true
         });
         finishMatch(false);
         return;
@@ -984,6 +1220,7 @@
 
     if(!room){
       lobbyStatus.textContent='Room not found.';
+      showToast('Room does not exist.');
       joinRoomBtn.disabled=false;
       return;
     }
@@ -1098,7 +1335,7 @@
       }
 
       if(roomPanel.style.display==='block'){
-        if(room.status==='starting') lobbyStatus.textContent='Starting...';
+        if(room.status==='starting') lobbyStatus.textContent='Starting game...';
         else if(!bothPresent) lobbyStatus.textContent=playerSlot==='p1' ? 'Waiting for player 2...' : 'Waiting for host...';
         else if(!bothReady) lobbyStatus.textContent='Both players must be ready before host can start.';
         else lobbyStatus.textContent=playerSlot==='p1' ? 'Both players ready. Tap START.' : 'Both players ready. Waiting for host.';
@@ -1128,6 +1365,7 @@
       }
 
       if(room.status==='finished'){
+        readyBtn.textContent='READY';
         const won = room.winner === playerSlot;
         finishMatch(won);
         return;
@@ -1172,7 +1410,7 @@
 
     await update(ref(db,'rooms/'+roomId),{
       status:'starting',
-      startAt:serverNow()+3500,
+      startAt:serverNow()+3000,
       winner:null,
       loser:null,
       attacks:null
@@ -1188,12 +1426,25 @@
     await update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{ready:current});
   }
   function firebaseCountdown(startAt){
+    show(gameScreen);
+    gameScreen.classList.add('multiplayerGame');
+    clearBoardVisuals();
+    running=false;
+    paused=false;
+    gameOverlay.classList.remove('active');
+    countdown.textContent='';
+    startCountdown.classList.add('show');
+
     const tick=()=>{
       const ms=startAt-serverNow();
       const n=Math.min(3, Math.ceil(ms/1000));
-      countdown.textContent=n>0?n:'GO!';
+      startCountdown.textContent=n>0?n:'GO!';
       if(ms<=0){
-        setTimeout(()=>{ isMultiplayer=true; reset(); },80);
+        setTimeout(()=>{
+          startCountdown.classList.remove('show');
+          isMultiplayer=true;
+          reset();
+        },180);
       }else requestAnimationFrame(tick);
     };
     tick();
