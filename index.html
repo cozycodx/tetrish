@@ -205,6 +205,29 @@
     to{transform:translate(-50%,-50%) scale(4.2);opacity:0}
   }
 
+
+  .miniMenuRow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .smallBtn{padding:11px 8px;font-size:11px;border-radius:14px}
+  .subPanel h2{margin:0 0 6px;font-size:24px;letter-spacing:.08em}
+  .toggleRow,.rangeRow{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #293052;background:#080b1a;border-radius:14px;padding:11px 12px;font-size:13px;font-weight:800;color:#dbeafe}
+  .rangeRow{flex-direction:column;align-items:stretch;text-align:left}.rangeRow span{font-size:12px;color:#cbd5e1}
+  .helpList,.statsList{text-align:left;border:1px solid #293052;background:#080b1a;border-radius:16px;padding:12px;color:#cbd5e1;font-size:13px}
+  .helpList p{margin:6px 0}.statsList p{display:flex;justify-content:space-between;margin:7px 0}
+  .modeNormal #menuScreen .bgBlocks::after{filter:hue-rotate(0deg)}
+  .modeSprint #menuScreen .bgBlocks::after{filter:hue-rotate(40deg) saturate(1.25)}
+  .modeTime #menuScreen .bgBlocks::after{filter:hue-rotate(160deg) saturate(1.25)}
+  .modeSurvival #menuScreen .bgBlocks::after{filter:hue-rotate(90deg) saturate(1.35)}
+  .menuPreview{position:absolute;left:50%;top:11%;width:110px;height:76px;transform:translateX(-50%);opacity:.16;pointer-events:none;z-index:0;animation:menuPieceFall 4.8s ease-in-out infinite}
+  .menuPreview i{position:absolute;width:24px;height:24px;border-radius:5px;background:#22d3ee;box-shadow:0 0 20px #22d3ee}
+  .menuPreview i:nth-child(1){left:24px;top:0}.menuPreview i:nth-child(2){left:0;top:24px}.menuPreview i:nth-child(3){left:24px;top:24px}.menuPreview i:nth-child(4){left:48px;top:24px}
+  @keyframes menuPieceFall{0%,100%{transform:translate(-50%,-8px) rotate(-2deg)}50%{transform:translate(-50%,18px) rotate(2deg)}}
+  .dangerFlash{position:absolute;left:0;right:0;bottom:0;height:18%;pointer-events:none;opacity:0;background:linear-gradient(0deg,rgba(251,113,133,.32),transparent);animation:dangerPulse .5s ease-in-out infinite;z-index:3}
+  .dangerFlash.show{opacity:1}@keyframes dangerPulse{50%{opacity:.45}}
+  #boardWrap.survival1{box-shadow:0 14px 40px #0006,0 0 50px rgba(34,211,238,.05)}
+  #boardWrap.survival2{box-shadow:0 14px 40px #0006,0 0 55px rgba(52,211,153,.10)}
+  #boardWrap.survival3{box-shadow:0 14px 40px #0006,0 0 60px rgba(250,204,21,.12)}
+  #boardWrap.survival4{box-shadow:0 14px 40px #0006,0 0 70px rgba(251,113,133,.16)}
+
   .menuBtns{display:grid;gap:10px}
   button{border:0;border-radius:18px;background:linear-gradient(135deg,#8b5cf6,#22d3ee);color:white;font-weight:900;padding:14px 18px;font-size:16px;box-shadow:0 10px 30px #0006}
   button:active{transform:translateY(1px)}
@@ -447,6 +470,7 @@
       <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
     </div>
     <div class="panel">
+      <div class="menuPreview"><i></i><i></i><i></i><i></i></div>
       <h1 class="heroTitle">TETRISH</h1>
       <div class="heroSub">STACK FAST • CLEAR HARD</div>
       <div class="menuDecor">
@@ -456,12 +480,42 @@
       <div id="mainMenuButtons" class="menuBtns">
         <button id="onePlayerBtn">1 PLAYER</button>
         <button id="multiBtn" class="secondaryBtn">MULTIPLAYER</button>
+        <div class="miniMenuRow">
+          <button id="settingsBtn" class="smallBtn secondaryBtn">SETTINGS</button>
+          <button id="helpBtn" class="smallBtn secondaryBtn">HELP</button>
+          <button id="statsBtn" class="smallBtn secondaryBtn">STATS</button>
+        </div>
       </div>
       <div id="singleModePanel" class="menuBtns" style="display:none">
-        <button id="normalModeBtn" class="modeBtn">NORMAL<small>Classic endless play. Clear lines and survive.</small></button>
-        <button id="sprintModeBtn" class="secondaryBtn modeBtn">SPRINT<small>Clear 40 lines as fast as possible.</small></button>
-        <button id="timeAttackBtn" class="secondaryBtn modeBtn">TIME ATTACK<small>Score as much as you can in 2 minutes.</small></button>
+        <button id="normalModeBtn" class="modeBtn" data-modebg="normal">NORMAL<small>Classic endless play. Clear lines and survive.</small></button>
+        <button id="survivalModeBtn" class="secondaryBtn modeBtn" data-modebg="survival">SURVIVAL<small>Level up every 10 lines. Background changes every level.</small></button>
+        <button id="sprintModeBtn" class="secondaryBtn modeBtn" data-modebg="sprint">SPRINT<small>Clear 40 lines as fast as possible.</small></button>
+        <button id="timeAttackBtn" class="secondaryBtn modeBtn" data-modebg="time">TIME ATTACK<small>Score as much as you can in 2 minutes.</small></button>
         <button id="backModeBtn" class="dangerBtn">BACK</button>
+      </div>
+      <div id="settingsPanel" class="menuBtns subPanel" style="display:none">
+        <h2>SETTINGS</h2>
+        <label class="toggleRow"><span>Sound Effects</span><input id="soundToggle" type="checkbox"></label>
+        <label class="toggleRow"><span>Vibration</span><input id="vibeToggle" type="checkbox"></label>
+        <label class="rangeRow"><span>Drag Sensitivity</span><input id="dragRange" type="range" min="16" max="36" value="24"></label>
+        <label class="rangeRow"><span>Effects Intensity</span><input id="effectsRange" type="range" min="0" max="2" value="1"></label>
+        <button id="backSettingsBtn" class="dangerBtn">BACK</button>
+      </div>
+      <div id="helpPanel" class="menuBtns subPanel" style="display:none">
+        <h2>CONTROLS</h2>
+        <div class="helpList">
+          <p><b>Drag left/right</b> move</p>
+          <p><b>Tap board</b> rotate</p>
+          <p><b>Swipe down</b> hard drop</p>
+          <p><b>Hold board</b> soft drop</p>
+          <p><b>HOLD button</b> store/swap piece</p>
+        </div>
+        <button id="backHelpBtn" class="dangerBtn">BACK</button>
+      </div>
+      <div id="statsPanel" class="menuBtns subPanel" style="display:none">
+        <h2>LOCAL STATS</h2>
+        <div id="statsList" class="statsList"></div>
+        <button id="backStatsBtn" class="dangerBtn">BACK</button>
       </div>
     </div>
   </section>
@@ -521,12 +575,13 @@
 
     <main>
       <div id="boardWrap">
-        <canvas id="board"></canvas><div id="comboPopup"></div><div id="clearPopup"></div><div id="startCountdown"></div>
+        <canvas id="board"></canvas><div id="comboPopup"></div><div id="clearPopup"></div><div id="dangerFlash" class="dangerFlash"></div><div id="startCountdown"></div>
         <div id="gameOverlay">
           <div>
             <h1>TOP OUT</h1>
             <p id="gameOverText"></p><p id="matchText" style="color:#34d399;font-weight:900"></p>
             <button id="retryBtn" style="display:none">RETRY</button>
+            <button id="rematchBtn" style="display:none">REMATCH</button>
             <button id="continueBtn" style="display:none">CONTINUE</button>
             <button id="quitBtn" class="secondaryBtn" style="margin-top:10px">QUIT</button>
           </div>
@@ -652,11 +707,58 @@
   let grid, bag=[], q=[], cur, holdPiece=null, held=false, scoreVal=0, linesVal=0, levelVal=1, bestVal=+localStorage.neonStackBest||0;
   let last=0, drop=0, running=false, moves=0, startTime=0, cell=20, ox=0, oy=0; let effects=[], comboVal=0, b2bVal=0, lastSpin=false;
   let player='Guest';
-  let pendingStart=false, singleMode='normal', modeTimeLeft=0, modeEndTime=0, modeTimerId=null, sprintStartTime=0, bestSprint=+(localStorage.tetrishBestSprint||0);
+  let pendingStart=false, singleMode='normal', modeTimeLeft=0, modeEndTime=0, modeTimerId=null, sprintStartTime=0, bestSprint=+(localStorage.tetrishBestSprint||0), lockDelay=0, lockDelayMs=460, lastGrounded=false;
 
-  let roomId='', playerId='', playerSlot='', roomUnsub=null, roomStarted=false, isMultiplayer=false, matchEnded=false, garbageQueue=0, lastIncomingGarbage=0, lastOpponentLost=false, paused=false, currentRoom=null, startLocked=false, serverOffset=0, pendingRoom='', remotePauseActive=false, pauseResumeAt=0, resumeCountdownActive=false;
+  let roomId='', playerId='', playerSlot='', roomUnsub=null, roomStarted=false, isMultiplayer=false, matchEnded=false, garbageQueue=0, lastIncomingGarbage=0, lastOpponentLost=false, paused=false, currentRoom=null, startLocked=false, serverOffset=0, pendingRoom='', remotePauseActive=false, pauseResumeAt=0, resumeCountdownActive=false, rematchWanted=false;
 
 
+
+
+  const defaultSettings={sound:true,vibe:true,drag:24,effects:1};
+  let settings=Object.assign({}, defaultSettings, JSON.parse(localStorage.tetrishSettings||'{}'));
+  let stats=Object.assign({games:0,bestScore:0,bestSprint:0,totalLines:0,wins:0,losses:0}, JSON.parse(localStorage.tetrishStats||'{}'));
+  bestSprint = stats.bestSprint || bestSprint;
+  function saveSettings(){ localStorage.tetrishSettings=JSON.stringify(settings); }
+  function saveStats(){ localStorage.tetrishStats=JSON.stringify(stats); }
+  function updateStatsUI(){
+    if(!window.statsList) return;
+    statsList.innerHTML =
+      '<p><span>Games Played</span><b>'+stats.games+'</b></p>'+
+      '<p><span>Best Score</span><b>'+stats.bestScore+'</b></p>'+
+      '<p><span>Best Sprint</span><b>'+(stats.bestSprint?formatTime(stats.bestSprint):'--')+'</b></p>'+
+      '<p><span>Total Lines</span><b>'+stats.totalLines+'</b></p>'+
+      '<p><span>Multiplayer Wins</span><b>'+stats.wins+'</b></p>'+
+      '<p><span>Multiplayer Losses</span><b>'+stats.losses+'</b></p>';
+  }
+  let audioCtx=null;
+  function playSound(type){
+    if(!settings.sound) return;
+    try{
+      audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      const f={move:220,rotate:330,hold:260,drop:90,clear:520,perfect:780,count:440,go:660,garbage:120,win:880,lose:150}[type]||300;
+      o.frequency.value=f; o.type=(type==='garbage'||type==='lose')?'sawtooth':'square';
+      g.gain.setValueAtTime(.035,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.12);
+      o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+.13);
+    }catch{}
+  }
+  function vibe(ms=25){ if(settings.vibe && navigator.vibrate) navigator.vibrate(ms); }
+  function setModeTheme(mode){
+    document.body.classList.remove('modeNormal','modeSprint','modeTime','modeSurvival');
+    document.body.classList.add(mode==='sprint'?'modeSprint':mode==='time'?'modeTime':mode==='survival'?'modeSurvival':'modeNormal');
+  }
+  function hideMenuSubPanels(){
+    settingsPanel.style.display='none'; helpPanel.style.display='none'; statsPanel.style.display='none'; singleModePanel.style.display='none';
+    mainMenuButtons.style.display='grid'; menuNameInput.style.display='block';
+  }
+  function isPerfectClear(){ return grid.every(row=>row.every(v=>!v)); }
+  function garbageForClear(linesCleared, spin=false, perfect=false){
+    let base=[0,0,1,2,4][linesCleared]||0;
+    if(spin) base += linesCleared ? 2 + linesCleared : 1;
+    if(comboVal>=2){ const table=[0,0,1,1,2,2,3,3,4]; base += table[Math.min(comboVal,8)] || 4; }
+    if(perfect) base += 6;
+    return base;
+  }
 
   function showToast(message){
     toast.textContent=message;
@@ -747,6 +849,7 @@
     gameOverText.textContent='';
     matchText.textContent='';
     retryBtn.style.display='none';
+    rematchBtn.style.display='none';
     continueBtn.style.display='none';
     quitBtn.style.display='none';
     quitBtn.textContent='QUIT';
@@ -778,6 +881,8 @@
       sprintBestBox.style.display=(!isMultiplayer && singleMode==='sprint')?'block':'none';
       sprintBest.textContent=bestSprint?formatTime(bestSprint):'--';
     }
+    boardWrap.classList.remove('survival1','survival2','survival3','survival4');
+    if(!isMultiplayer && singleMode==='survival') boardWrap.classList.add('survival'+Math.min(4,levelVal));
     draw();
   }
 
@@ -804,6 +909,7 @@
 
       const ms=resumeAt-serverNow();
       const n=Math.min(3, Math.ceil(ms/1000));
+      if(startCountdown.textContent !== (n>0?String(n):'GO!')){ playSound(n>0?'count':'go'); vibe(n>0?12:35); }
       startCountdown.textContent=n>0?n:'GO!';
 
       if(ms<=0){
@@ -846,10 +952,11 @@
     running=false;
     pendingStart=true;
     let n=3;
-    startCountdown.textContent=n;
+    startCountdown.textContent=n; playSound('count'); vibe(12);
     startCountdown.classList.add('show');
     const timer=setInterval(()=>{
       n--;
+      if(startCountdown.textContent !== (n>0?String(n):'GO!')){ playSound(n>0?'count':'go'); vibe(n>0?12:35); }
       startCountdown.textContent=n>0?n:'GO!';
       if(n<=0){
         clearInterval(timer);
@@ -894,7 +1001,7 @@
     if(!isMultiplayer && singleMode==='sprint' && linesVal>=40){
       running=false;
       const sprintMs=Math.round(performance.now()-sprintStartTime);
-      if(!bestSprint || sprintMs<bestSprint){ bestSprint=sprintMs; localStorage.tetrishBestSprint=bestSprint; }
+      if(!bestSprint || sprintMs<bestSprint){ bestSprint=sprintMs; localStorage.tetrishBestSprint=bestSprint; stats.bestSprint=bestSprint; } stats.games++; stats.bestScore=Math.max(stats.bestScore,scoreVal); stats.totalLines+=linesVal; saveStats();
       gameOverText.textContent='Sprint finished! Score '+scoreVal+' · Time '+formatTime(sprintMs)+'.';
       retryBtn.style.display='block';
       continueBtn.style.display='none';
@@ -910,11 +1017,11 @@
     updateViewportLayout();
     show(gameScreen);
     startCountdown.classList.remove('show'); gameOverlay.classList.remove('active'); matchText.textContent=''; quitBtn.style.display='block'; paused=false; remotePauseActive=false; pauseResumeAt=0; resumeCountdownActive=false; matchEnded=false; garbageQueue=0; updateGarbageMeter(); lastIncomingGarbage=0; lastOpponentLost=false; retryBtn.style.display='none'; continueBtn.style.display='none'; quitBtn.textContent='QUIT';
-    clearInterval(modeTimerId); modeTimerId=null; modeTimeLeft=singleMode==='time'?120000:0; modeEndTime=0;
+    clearInterval(modeTimerId); modeTimerId=null; modeTimeLeft=singleMode==='time'?120000:0; modeEndTime=0; lockDelay=0; lastGrounded=false;
     grid=Array.from({length:H},()=>Array(W).fill(0));
     bag=[]; q=[]; holdPiece=null; held=false; scoreVal=0; linesVal=0; levelVal=1; comboVal=0; b2bVal=0; lastSpin=false; moves=0; startTime=performance.now(); sprintStartTime=startTime; modeEndTime=startTime+120000;
     while(q.length<5) q.push(take());
-    spawn(); running=true; startModeTimer(); if(isMultiplayer && roomId && playerSlot){ update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{alive:true,score:0,lines:0,combo:0}); } updateUI(); resize();
+    spawn(); running=true; startModeTimer(); if(isMultiplayer && roomId && playerSlot){ update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{alive:true,score:0,lines:0,combo:0,rematch:false}); } updateUI(); resize();
   }
   function take(){ if(!bag.length) bag='IOTSZJL'.split('').sort(()=>Math.random()-.5); return bag.pop(); }
   function spawn(){ cur={t:q.shift(),m:clone(shapes[q[0]?q[0]:take()]),x:3,y:0}; cur.t = cur.t || take(); cur.m=clone(shapes[cur.t]); q.push(take()); held=false; if(hit(cur.x,cur.y,cur.m)) gameOver(); }
@@ -928,6 +1035,7 @@
     if(!window.garbageCount || !window.garbageFill) return;
     garbageCount.textContent=garbageQueue;
     garbageFill.style.height=Math.min(100,garbageQueue*14)+'%';
+    if(window.dangerFlash) dangerFlash.classList.toggle('show', isMultiplayer && garbageQueue>0);
   }
 
   function addGarbageLines(count){
@@ -942,10 +1050,9 @@
     effects.push({type:'burst',x:5,y:H-1,life:18});
   }
 
-  async function sendAttack(linesCleared){
+  async function sendAttack(linesCleared, spin=false, perfect=false){
     if(!isMultiplayer || !roomId || !playerSlot || matchEnded || linesCleared<1) return;
-    const comboBonus = Math.max(0, comboVal-1);
-    const garbage = linesCleared + comboBonus;
+    const garbage = garbageForClear(linesCleared, spin, perfect);
     const target = playerSlot==='p1' ? 'p2' : 'p1';
     const attackRef = ref(db,'rooms/'+roomId+'/players/'+target+'/garbage');
     const snapPath = 'rooms/'+roomId+'/players/'+target+'/garbage';
@@ -1003,30 +1110,32 @@
       grid=grid.filter((_,y)=>!removedRows.includes(y));
       while(grid.length<H) grid.unshift(Array(W).fill(0));
       comboVal++;
+      const wasSpin=lastSpin;
+      const perfect=isPerfectClear();
       showComboPopup();
-      showClearPopup((lastSpin?'T-SPIN ':'') + clearName(c));
+      showClearPopup(perfect?'PERFECT CLEAR':((wasSpin?'T-SPIN ':'') + clearName(c))); playSound(perfect?'perfect':'clear'); vibe(perfect?70:35);
       if(c===4) b2bVal++; else b2bVal=0;
-      scoreVal += ([0,100,300,500,800][c]*levelVal) + Math.max(0,comboVal-1)*50 + (b2bVal>1?200*levelVal:0);
-      sendAttack(c);
+      scoreVal += ([0,100,300,500,800][c]*levelVal) + Math.max(0,comboVal-1)*50 + (b2bVal>1?200*levelVal:0) + (perfect?1200*levelVal:0);
+      sendAttack(c,wasSpin,perfect);
       linesVal += c;
       levelVal=1+Math.floor(linesVal/10);
       checkModeGoal();
     } else { if(lastSpin) showClearPopup('T-SPIN'); comboVal=0; }
     lastSpin=false;
   }
-  function lock(){merge(); clearLines(); if(garbageQueue>0){addGarbageLines(garbageQueue); garbageQueue=0; updateGarbageMeter();} spawn(); updateUI()}
-  function move(dx){ if(!running||paused)return; if(!hit(cur.x+dx,cur.y,cur.m)){cur.x+=dx;moves++;draw()} }
+  function lock(){lockDelay=0; lastGrounded=false; merge(); clearLines(); if(garbageQueue>0){addGarbageLines(garbageQueue); garbageQueue=0; updateGarbageMeter();} spawn(); updateUI()}
+  function move(dx){ if(!running||paused)return; if(!hit(cur.x+dx,cur.y,cur.m)){cur.x+=dx;moves++;lockDelay=0;playSound('move');draw()} }
   function soft(){ if(!running||paused)return; if(!hit(cur.x,cur.y+1,cur.m)){cur.y++;scoreVal++;moves++} else lock(); updateUI();draw() }
   function hard(){ if(!running||paused)return; let d=0; while(!hit(cur.x,cur.y+1,cur.m)){cur.y++;d++}
     effects.push({type:'burst',x:cur.x+2,y:cur.y,life:20});
     for(let i=0;i<22;i++) effects.push({type:'particle',x:cur.x+Math.random()*4,y:cur.y+Math.random()*2,vx:(Math.random()-.5)*.25,vy:-Math.random()*.35,life:18+Math.random()*14,t:cur.t});
     const bw=document.getElementById('boardWrap'); bw.classList.remove('shake'); void bw.offsetWidth; bw.classList.add('shake');
-    scoreVal+=d*2;moves++;lock();draw() }
-  function rotate(){ if(!running||paused)return; const m=rot(cur.m); for(const k of [0,-1,1,-2,2]) if(!hit(cur.x+k,cur.y,m)){cur.x+=k;cur.m=m;lastSpin=detectSpin();moves++;draw();return} }
+    scoreVal+=d*2;moves++;playSound('drop');vibe(18);lock();draw() }
+  function rotate(){ if(!running||paused)return; const m=rot(cur.m); for(const k of [0,-1,1,-2,2]) if(!hit(cur.x+k,cur.y,m)){cur.x+=k;cur.m=m;lastSpin=detectSpin();moves++;lockDelay=0;playSound('rotate');draw();return} }
   function hold(){
     if(!running||paused||held)return;
     const t=cur.t; if(holdPiece){cur={t:holdPiece,m:clone(shapes[holdPiece]),x:3,y:0}; holdPiece=t} else {holdPiece=t; spawn()}
-    held=true; moves++; updateUI(); draw();
+    held=true; moves++; playSound('hold'); updateUI(); draw();
   }
   async function gameOver(){
     if(matchEnded) return;
@@ -1043,9 +1152,10 @@
         'players/p2/alive':true
       });
     }
-    bestVal=Math.max(bestVal,scoreVal); localStorage.neonStackBest=bestVal;
+    bestVal=Math.max(bestVal,scoreVal); localStorage.neonStackBest=bestVal; stats.games++; stats.bestScore=Math.max(stats.bestScore,scoreVal); stats.totalLines+=linesVal; if(isMultiplayer) stats.losses++; saveStats();
     gameOverText.textContent='Score '+scoreVal+' · Lines '+linesVal+'.';
     retryBtn.style.display=isMultiplayer?'none':'block';
+    rematchBtn.style.display=isMultiplayer?'block':'none'; rematchBtn.textContent='REMATCH'; rematchBtn.disabled=false;
     continueBtn.style.display='none';
     quitBtn.style.display='block';
     quitBtn.textContent=isMultiplayer?'ROOM':'MENU';
@@ -1054,6 +1164,7 @@
   }
 
   function finishMatch(won){
+    if(matchEnded && gameOverlay.classList.contains('active')) return;
     matchEnded=true;
     running=false;
     paused=false;
@@ -1064,8 +1175,11 @@
 
     gameOverText.textContent=won ? 'Opponent topped out.' : 'You topped out.';
     matchText.textContent=won ? 'YOU WIN' : 'YOU LOSE';
+    if(won){ stats.wins++; playSound('win'); } else { stats.losses++; playSound('lose'); }
+    stats.games++; stats.bestScore=Math.max(stats.bestScore,scoreVal); stats.totalLines+=linesVal; saveStats();
 
     retryBtn.style.display=isMultiplayer?'none':'block';
+    rematchBtn.style.display=isMultiplayer?'block':'none'; rematchBtn.textContent='REMATCH'; rematchBtn.disabled=false;
     continueBtn.style.display='none';
     quitBtn.style.display='block';
     quitBtn.textContent=isMultiplayer?'ROOM':'MENU';
@@ -1088,6 +1202,8 @@
       sprintBestBox.style.display=(!isMultiplayer && singleMode==='sprint')?'block':'none';
       sprintBest.textContent=bestSprint?formatTime(bestSprint):'--';
     }
+    boardWrap.classList.remove('survival1','survival2','survival3','survival4');
+    if(!isMultiplayer && singleMode==='survival') boardWrap.classList.add('survival'+Math.min(4,levelVal));
 
     drawMini(nctx,q[0]); drawMini(n2ctx,q[1]); drawMini(n3ctx,q[2]); drawMini(n4ctx,q[3]); drawMini(hpctx,holdPiece);
     if(isMultiplayer && roomId && playerSlot && running){ update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{score:scoreVal,lines:linesVal,combo:comboVal}).catch(()=>{}); }
@@ -1154,11 +1270,31 @@
     const x=(wBox-w)/2, y=(hBox-h)/2;
     m.forEach((r,dy)=>r.forEach((v,dx)=>v&&drawCell(t,x+dx*s,y+dy*s,s,c)));
   }
+  function currentDropSpeed(){ return Math.max(55,680-(levelVal-1)*70); }
+  function gravityStep(delta){
+    drop+=delta;
+    const grounded = cur && hit(cur.x,cur.y+1,cur.m);
+    if(!grounded){ lastGrounded=false; lockDelay=0; }
+    else{
+      if(!lastGrounded){ lockDelay=0; lastGrounded=true; }
+      lockDelay+=delta;
+      if(lockDelay>=lockDelayMs){ lockDelay=0; lock(); drop=0; return; }
+    }
+    if(drop>currentDropSpeed()){ soft(); drop=0; }
+  }
   function loop(t){
-    if(running && !paused){ drop+=t-last; if(drop>Math.max(55,680-(levelVal-1)*70)){soft();drop=0} draw(); updateUI() }
+    if(running && !paused){ gravityStep(t-last); draw(); updateUI() }
     last=t; requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
+
+
+  soundToggle.checked=!!settings.sound; vibeToggle.checked=!!settings.vibe; dragRange.value=settings.drag; effectsRange.value=settings.effects;
+  soundToggle.onchange=()=>{settings.sound=soundToggle.checked;saveSettings();playSound('move')};
+  vibeToggle.onchange=()=>{settings.vibe=vibeToggle.checked;saveSettings();vibe(30)};
+  dragRange.oninput=()=>{settings.drag=+dragRange.value;saveSettings();};
+  effectsRange.oninput=()=>{settings.effects=+effectsRange.value;saveSettings();};
+
 
 
   function spawnTapFx(screen,e){
@@ -1175,12 +1311,31 @@
   multiScreen.addEventListener('pointerdown', e=>spawnTapFx(multiScreen,e));
 
 
-  onePlayerBtn.onclick=()=>{ menuNameInput.style.display='none'; mainMenuButtons.style.display='none'; singleModePanel.style.display='grid'; };
-  backModeBtn.onclick=()=>{ menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; };
-  normalModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='normal'; startGameWithCountdown(); };
-  sprintModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='sprint'; startGameWithCountdown(); };
-  timeAttackBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='time'; startGameWithCountdown(); };
+  onePlayerBtn.onclick=()=>{ menuNameInput.style.display='none'; mainMenuButtons.style.display='none'; singleModePanel.style.display='grid'; setModeTheme('normal'); };
+  backModeBtn.onclick=()=>{ hideMenuSubPanels(); setModeTheme('normal'); };
+
+  settingsBtn.onclick=()=>{ menuNameInput.style.display='none'; mainMenuButtons.style.display='none'; settingsPanel.style.display='grid'; };
+  helpBtn.onclick=()=>{ menuNameInput.style.display='none'; mainMenuButtons.style.display='none'; helpPanel.style.display='grid'; };
+  statsBtn.onclick=()=>{ menuNameInput.style.display='none'; mainMenuButtons.style.display='none'; updateStatsUI(); statsPanel.style.display='grid'; };
+  backSettingsBtn.onclick=hideMenuSubPanels; backHelpBtn.onclick=hideMenuSubPanels; backStatsBtn.onclick=hideMenuSubPanels;
+  [normalModeBtn,sprintModeBtn,timeAttackBtn,survivalModeBtn].forEach(btn=>btn.addEventListener('touchstart',()=>setModeTheme(btn.dataset.modebg||'normal'),{passive:true}));
+
+  normalModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='normal'; setModeTheme('normal'); startGameWithCountdown(); };
+  survivalModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='survival'; setModeTheme('survival'); startGameWithCountdown(); };
+  sprintModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='sprint'; setModeTheme('sprint'); startGameWithCountdown(); };
+  timeAttackBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='time'; setModeTheme('time'); startGameWithCountdown(); };
   retryBtn.onclick=()=>{ if(!isMultiplayer) startGameWithCountdown(); };
+
+  rematchBtn.onclick=async ()=>{
+    if(!isMultiplayer || !roomId || !playerSlot) return;
+    rematchWanted=true; rematchBtn.disabled=true; rematchBtn.textContent='WAITING...'; matchText.textContent='Waiting for opponent.';
+    await update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{rematch:true,ready:true}).catch(()=>{});
+    const snap=await get(ref(db,'rooms/'+roomId)).catch(()=>null);
+    const room=snap?.val();
+    if(room?.players?.p1?.rematch && room?.players?.p2?.rematch && playerSlot==='p1'){
+      await update(ref(db,'rooms/'+roomId),{status:'starting',startAt:serverNow()+3000,winner:null,loser:null,attacks:null,pause:null,'players/p1/rematch':false,'players/p2/rematch':false,'players/p1/ready':true,'players/p2/ready':true});
+    }
+  };
   continueBtn.onclick=async ()=>{
     if(isMultiplayer && roomId && playerSlot){
       const resumeAt=serverNow()+3000;
@@ -1217,6 +1372,8 @@
 
       running=false;
       matchEnded=false;
+      rematchWanted=false; rematchBtn.disabled=false;
+      if(roomId && playerSlot) update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{rematch:false,ready:false}).catch(()=>{});
       if(playerSlot==='p1' && roomId){
         update(ref(db,'rooms/'+roomId),{
           status:'waiting',
@@ -1277,7 +1434,7 @@
   function act(a){({hold:hold}[a]||(()=>{}))()}
 
   let sx=0, sy=0, lastX=0, touching=false, softTimer=null, longPressTimer=null, didGesture=false;
-  const MOVE_STEP = 24;
+  let MOVE_STEP = settings.drag || 24;
   function stopSoftDrop(){ clearInterval(softTimer); softTimer=null; clearTimeout(longPressTimer); longPressTimer=null; }
   canvas.addEventListener('touchstart', e => {
     e.preventDefault();
@@ -1294,6 +1451,7 @@
     if(!touching) return;
     const p=e.touches[0], dx=p.clientX-lastX, totalY=p.clientY-sy;
     if(Math.abs(totalY)>70 && totalY>0){ didGesture=true; stopSoftDrop(); hard(); touching=false; return; }
+    MOVE_STEP=settings.drag||24;
     if(Math.abs(dx)>=MOVE_STEP){
       const steps=Math.trunc(dx/MOVE_STEP);
       for(let i=0;i<Math.abs(steps);i++) move(steps>0?1:-1);
@@ -1389,7 +1547,7 @@
       attacks:null,
       pause:null,
       players:{
-        [playerSlot]:{id:playerId,name:player,ready:false,online:true,alive:true,score:0,lines:0,combo:0,lastSeen:Date.now()}
+        [playerSlot]:{id:playerId,name:player,ready:false,online:true,alive:true,score:0,lines:0,combo:0,rematch:false,lastSeen:Date.now()}
       }
     });
     onDisconnect(ref(db,'rooms/'+roomId+'/players/'+playerSlot)).remove();
@@ -1427,6 +1585,7 @@
 
     if(p1 && p2){
       lobbyStatus.textContent='Room is full.';
+      showToast('Room is full.');
       joinRoomBtn.disabled=false;
       return;
     }
@@ -1437,7 +1596,7 @@
     playerSlot = p1 ? 'p2' : 'p1';
 
     await update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{
-      id:playerId,name:player,ready:false,online:true,alive:true,score:0,lines:0,combo:0,lastSeen:Date.now()
+      id:playerId,name:player,ready:false,online:true,alive:true,score:0,lines:0,combo:0,rematch:false,lastSeen:Date.now()
     });
     onDisconnect(ref(db,'rooms/'+roomId+'/players/'+playerSlot)).remove();
     showRoomPanel();
@@ -1525,6 +1684,9 @@
         startMatchBtn.disabled = startLocked || !bothPresent || !bothReady || room.status==='starting';
       }
 
+      if(matchEnded && room.status==='waiting'){
+        matchEnded=false; rematchWanted=false; rematchBtn.disabled=false; gameOverlay.classList.remove('active'); showRoomPanel(); show(multiScreen);
+      }
       if(roomPanel.style.display==='block'){
         if(room.status==='starting') lobbyStatus.textContent='Starting game...';
         else if(!bothPresent) lobbyStatus.textContent=playerSlot==='p1' ? 'Waiting for player 2...' : 'Waiting for host...';
@@ -1549,8 +1711,14 @@
 
       if(room.status==='finished'){
         readyBtn.textContent='READY';
+        if(room.players?.p1?.rematch && room.players?.p2?.rematch && playerSlot==='p1' && !startLocked){
+          startLocked=true;
+          update(ref(db,'rooms/'+roomId),{status:'starting',startAt:serverNow()+3000,winner:null,loser:null,attacks:null,pause:null,'players/p1/rematch':false,'players/p2/rematch':false,'players/p1/ready':true,'players/p2/ready':true});
+          return;
+        }
         const won = room.winner === playerSlot;
         finishMatch(won);
+        if(room.players?.[playerSlot]?.rematch){ rematchBtn.disabled=true; rematchBtn.textContent='WAITING...'; matchText.textContent='Waiting for opponent.'; }
         return;
       }
 
@@ -1575,6 +1743,7 @@
         let total=0;
         attackIds.forEach(id=>{ total += Number(attacks[id].amount||0); remove(ref(db,'rooms/'+roomId+'/attacks/'+playerSlot+'/'+id)); });
         garbageQueue += total;
+        playSound('garbage'); vibe(60);
         updateGarbageMeter();
       }
 
