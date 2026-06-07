@@ -1032,22 +1032,31 @@
     }
     bestVal=Math.max(bestVal,scoreVal); localStorage.neonStackBest=bestVal;
     gameOverText.textContent='Score '+scoreVal+' · Lines '+linesVal+'.';
-    retryBtn.style.display=isMultiplayer?'none':'block'; continueBtn.style.display='none'; quitBtn.textContent=isMultiplayer?'ROOM':'MENU';
+    retryBtn.style.display=isMultiplayer?'none':'block';
+    continueBtn.style.display='none';
+    quitBtn.style.display='block';
+    quitBtn.textContent=isMultiplayer?'ROOM':'MENU';
     gameOverlay.classList.add('active');
     updateUI();
   }
 
   function finishMatch(won){
-    if(matchEnded) return;
     matchEnded=true;
     running=false;
     paused=false;
     remotePauseActive=false;
     resumeCountdownActive=false;
     startCountdown.classList.remove('show');
+    gameOverlay.classList.remove('active');
+
     gameOverText.textContent=won ? 'Opponent topped out.' : 'You topped out.';
     matchText.textContent=won ? 'YOU WIN' : 'YOU LOSE';
-    retryBtn.style.display=isMultiplayer?'none':'block'; continueBtn.style.display='none'; quitBtn.textContent=isMultiplayer?'ROOM':'MENU';
+
+    retryBtn.style.display=isMultiplayer?'none':'block';
+    continueBtn.style.display='none';
+    quitBtn.style.display='block';
+    quitBtn.textContent=isMultiplayer?'ROOM':'MENU';
+
     gameOverlay.classList.add('active');
   }
 
@@ -1139,15 +1148,18 @@
   requestAnimationFrame(loop);
 
 
-  menuScreen.addEventListener('pointerdown', e=>{
-    if(!menuScreen.classList.contains('active')) return;
+  function spawnTapFx(screen,e){
+    if(!screen.classList.contains('active')) return;
     const fx=document.createElement('i');
     fx.className='tapFx';
     fx.style.left=e.clientX+'px';
     fx.style.top=e.clientY+'px';
-    menuScreen.appendChild(fx);
+    screen.appendChild(fx);
     setTimeout(()=>fx.remove(),600);
-  });
+  }
+
+  menuScreen.addEventListener('pointerdown', e=>spawnTapFx(menuScreen,e));
+  multiScreen.addEventListener('pointerdown', e=>spawnTapFx(multiScreen,e));
 
 
   onePlayerBtn.onclick=()=>{ menuNameInput.style.display='none'; mainMenuButtons.style.display='none'; singleModePanel.style.display='grid'; };
@@ -1180,6 +1192,7 @@
           status:'finished',
           loser:playerSlot,
           winner:playerSlot==='p1'?'p2':'p1',
+          pause:null,
           'players/p1/ready':false,
           'players/p2/ready':false,
           'players/p1/alive':true,
@@ -1205,7 +1218,7 @@
           'players/p2/alive':true
         });
       }
-      roomStarted=false; startLocked=false; countdown.textContent=''; if(window.opponentHud) opponentHud.style.display='none'; lobbyStatus.textContent='';
+      roomStarted=false; startLocked=false; countdown.textContent=''; matchText.textContent=''; if(window.opponentHud) opponentHud.style.display='none'; lobbyStatus.textContent='';
       readyBtn.textContent='READY';
       if(window.startMatchBtn){ startMatchBtn.disabled=false; }
       showRoomPanel();
@@ -1514,6 +1527,13 @@
       }
 
 
+      if(room.status==='finished'){
+        readyBtn.textContent='READY';
+        const won = room.winner === playerSlot;
+        finishMatch(won);
+        return;
+      }
+
       const pauseState = room.pause || null;
       if(isMultiplayer && !matchEnded && pauseState){
         if(pauseState.active){
@@ -1536,13 +1556,6 @@
         attackIds.forEach(id=>{ total += Number(attacks[id].amount||0); remove(ref(db,'rooms/'+roomId+'/attacks/'+playerSlot+'/'+id)); });
         garbageQueue += total;
         updateGarbageMeter();
-      }
-
-      if(room.status==='finished'){
-        readyBtn.textContent='READY';
-        const won = room.winner === playerSlot;
-        finishMatch(won);
-        return;
       }
 
       if(room.status==='starting' && room.startAt && !roomStarted){
