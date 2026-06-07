@@ -219,9 +219,36 @@
   .rangeRow{flex-direction:column;align-items:stretch;text-align:left}.rangeRow span{font-size:12px;color:#cbd5e1}
   .helpList,.statsList{text-align:left;border:1px solid #293052;background:#080b1a;border-radius:16px;padding:12px;color:#cbd5e1;font-size:13px}
   .helpList p{margin:6px 0}.statsList p{display:flex;justify-content:space-between;margin:7px 0}
+  .helpList p{line-height:1.35}
+  .rangeRow small,.toggleRow small{color:#94a3b8;font-size:10px;font-weight:700;line-height:1.25}
 
   .statsList h3{margin:10px 0 6px;color:#93c5fd;font-size:12px;letter-spacing:.08em}
   .statsList h3:first-child{margin-top:0}
+
+  .statsHeader{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-bottom:6px;
+  }
+  .statsHeader h2{
+    text-align:center;
+    margin:0
+  }
+  .statsClearBtn{
+    position:absolute;
+    right:0;
+    width:38px;
+    height:38px;
+    min-width:38px;
+    padding:0;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    font-size:18px;
+    background:linear-gradient(135deg,#334155,#475569);
+  }
 
 
 
@@ -544,24 +571,31 @@
         <h2>SETTINGS</h2>
         <label class="toggleRow"><span>Sound Effects</span><input id="soundToggle" type="checkbox"></label>
         <label class="toggleRow"><span>Vibration</span><input id="vibeToggle" type="checkbox"></label>
-        <label class="rangeRow"><span>Swipe Repeat / DAS-ARR Feel</span><input id="dragRange" type="range" min="16" max="36" value="24"></label>
-        <label class="toggleRow"><span>Ghost Piece</span><input id="ghostToggle" type="checkbox"></label>
-        <label class="rangeRow"><span>Effects Intensity</span><input id="effectsRange" type="range" min="0" max="2" value="1"></label>
+        <label class="rangeRow">
+          <span>Swipe Repeat / DAS-ARR Feel</span>
+          <small>Lower = faster movement, higher = more control.</small>
+          <input id="dragRange" type="range" min="16" max="36" value="24">
+        </label>
+        <label class="toggleRow"><span>Ghost Piece<br><small>Shows where the current piece will land.</small></span><input id="ghostToggle" type="checkbox"></label>
+        <label class="rangeRow"><span>Effects Intensity</span><small>Controls line clear effects and particles.</small><input id="effectsRange" type="range" min="0" max="2" value="1"></label>
         <button id="backSettingsBtn" class="dangerBtn">BACK</button>
       </div>
       <div id="helpPanel" class="menuBtns subPanel" style="display:none">
         <h2>CONTROLS</h2>
         <div class="helpList">
-          <p><b>Drag left/right</b> move. Settings controls repeat feel.</p>
-          <p><b>Tap board</b> rotate</p>
-          <p><b>Swipe down</b> hard drop</p>
-          <p><b>Hold board</b> soft drop</p>
-          <p><b>HOLD button</b> store/swap piece</p>
+          <p><b>Move</b> Drag left or right on the board.</p>
+          <p><b>Rotate</b> Tap the board once.</p>
+          <p><b>Hard Drop</b> Swipe down to drop instantly.</p>
+          <p><b>Soft Drop</b> Hold the board to drop faster.</p>
+          <p><b>Hold Piece</b> Tap hold to store or swap piece.</p>
         </div>
         <button id="backHelpBtn" class="dangerBtn">BACK</button>
       </div>
       <div id="statsPanel" class="menuBtns subPanel" style="display:none">
-        <h2>LOCAL STATS</h2>
+        <div class="statsHeader">
+          <h2>LOCAL STATS</h2>
+          <button id="clearStatsBtn" class="statsClearBtn" aria-label="Clear Stats">🧹</button>
+        </div>
         <div id="statsList" class="statsList"></div>
         <button id="backStatsBtn" class="dangerBtn">BACK</button>
       </div>
@@ -574,7 +608,7 @@
     </div>
     <div class="panel">
       <h1 class="multiTitle">MULTIPLAYER</h1>
-      <p class="hint" style="margin-top:0">Create a room, share link, both players ready up, then the game starts.</p>
+      <p id="multiHint" class="hint" style="margin-top:0">Create or join a room to play with another player.</p>
       <div id="firebaseWarning">Firebase is not configured yet. Paste your Firebase config inside the code first.</div>
 
       <div id="multiMenu" class="menuBtns">
@@ -768,7 +802,7 @@
 
   const defaultSettings={sound:true,vibe:true,drag:24,effects:1,ghost:true};
   let settings=Object.assign({}, defaultSettings, JSON.parse(localStorage.tetrishSettings||'{}'));
-  let stats=Object.assign({games:0,bestScore:0,bestNormal:0,bestTimeAttack:0,bestLevelRush:0,bestSprint:0,totalLines:0,wins:0,losses:0}, JSON.parse(localStorage.tetrishStats||'{}'));
+  let stats=Object.assign({games:0,bestScore:0,bestNormal:0,bestTimeAttack:0,bestLevelRush:0,bestLevelRushLevel:1,bestSprint:0,totalLines:0,wins:0,losses:0}, JSON.parse(localStorage.tetrishStats||'{}'));
   bestSprint = stats.bestSprint || bestSprint;
   function saveSettings(){ localStorage.tetrishSettings=JSON.stringify(settings); }
   function saveStats(){ localStorage.tetrishStats=JSON.stringify(stats); }
@@ -778,7 +812,10 @@
     stats.bestScore=Math.max(stats.bestScore,scoreVal);
     if(singleMode==='normal') stats.bestNormal=Math.max(stats.bestNormal,scoreVal);
     if(singleMode==='time') stats.bestTimeAttack=Math.max(stats.bestTimeAttack,scoreVal);
-    if(singleMode==='levelrush') stats.bestLevelRush=Math.max(stats.bestLevelRush,scoreVal);
+    if(singleMode==='levelrush'){
+      stats.bestLevelRush=Math.max(stats.bestLevelRush,scoreVal);
+      stats.bestLevelRushLevel=Math.max(stats.bestLevelRushLevel||1,levelVal);
+    }
     stats.totalLines+=linesVal;
     saveStats();
   }
@@ -789,13 +826,14 @@
       '<h3>Single Player</h3>'+
       '<p><span>Best Normal Score</span><b>'+stats.bestNormal+'</b></p>'+
       '<p><span>Best Level Rush Score</span><b>'+stats.bestLevelRush+'</b></p>'+
+      '<p><span>Highest Level Rush Level</span><b>'+(stats.bestLevelRushLevel||1)+'</b></p>'+
       '<p><span>Best Time Attack Score</span><b>'+stats.bestTimeAttack+'</b></p>'+
       '<p><span>Best Sprint Time</span><b>'+(stats.bestSprint?formatTime(stats.bestSprint):'--')+'</b></p>'+
+      '<h3>Multiplayer</h3>'+
+      '<p><span>W / L</span><b>'+stats.wins+' / '+stats.losses+'</b></p>'+
       '<h3>Overall</h3>'+
       '<p><span>Games Played</span><b>'+stats.games+'</b></p>'+
-      '<p><span>Total Lines</span><b>'+stats.totalLines+'</b></p>'+
-      '<h3>Multiplayer</h3>'+
-      '<p><span>W / L</span><b>'+stats.wins+' / '+stats.losses+'</b></p>';
+      '<p><span>Total Lines</span><b>'+stats.totalLines+'</b></p>';
   }
   let audioCtx=null;
   function playSound(type){
@@ -850,6 +888,11 @@
   function getName(){
     player=(menuNameInput.value||'Guest').trim()||'Guest';
     playerName.textContent='• '+player;
+  }
+
+
+  function setMultiHint(text){
+    if(window.multiHint) multiHint.textContent=text;
   }
 
   function showFirebaseWarning(){
@@ -1398,6 +1441,7 @@
 
 
 
+
   function spawnTapFx(screen,e){
     if(!screen.classList.contains('active')) return;
     const fx=document.createElement('i');
@@ -1419,6 +1463,15 @@
   helpBtn.onclick=()=>{ menuNameInput.style.display='none'; mainMenuButtons.style.display='none'; helpPanel.style.display='grid'; };
   statsBtn.onclick=()=>{ menuNameInput.style.display='none'; mainMenuButtons.style.display='none'; updateStatsUI(); statsPanel.style.display='grid'; };
   backSettingsBtn.onclick=hideMenuSubPanels; backHelpBtn.onclick=hideMenuSubPanels; backStatsBtn.onclick=hideMenuSubPanels;
+  clearStatsBtn.onclick=()=>{
+    if(!confirm('Clear all local stats?')) return;
+    stats={games:0,bestScore:0,bestNormal:0,bestTimeAttack:0,bestLevelRush:0,bestLevelRushLevel:1,bestSprint:0,totalLines:0,wins:0,losses:0};
+    bestSprint=0;
+    localStorage.removeItem('tetrishStats');
+    localStorage.removeItem('tetrishBestSprint');
+    updateStatsUI();
+    showToast('Stats cleared.');
+  };
   [normalModeBtn,sprintModeBtn,timeAttackBtn,survivalModeBtn].forEach(btn=>btn.addEventListener('touchstart',()=>setModeTheme(btn.dataset.modebg||'normal'),{passive:true}));
 
   normalModeBtn.onclick=()=>{ getName(); isMultiplayer=false; singleMode='normal'; setModeTheme('normal'); startGameWithCountdown(); };
@@ -1577,8 +1630,8 @@
   // Firebase multiplayer
   multiBtn.onclick=()=>{ getName(); resetMainMenuTheme(); openMulti(); };
   backFromMultiBtn.onclick=()=>{ clearRoomUrl(); menuNameInput.style.display='block'; singleModePanel.style.display='none'; mainMenuButtons.style.display='grid'; resetMainMenuTheme(); show(menuScreen); };
-  showJoinBtn.onclick=()=>{ multiMenu.style.display='none'; joinPanel.style.display='block'; };
-  cancelJoinBtn.onclick=()=>{ joinPanel.style.display='none'; multiMenu.style.display='grid'; };
+  showJoinBtn.onclick=()=>{ multiMenu.style.display='none'; joinPanel.style.display='block'; setMultiHint('Enter the room code from your friend, then tap JOIN.'); };
+  cancelJoinBtn.onclick=()=>{ joinPanel.style.display='none'; multiMenu.style.display='grid'; setMultiHint('Create a new room or join using a room code.'); };
   createRoomBtn.onclick=createRoom;
   joinRoomBtn.onclick=()=>joinRoom(roomInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g,''));
   copyRoomBtn.onclick=async ()=>{
@@ -1610,6 +1663,7 @@
     countdown.textContent=''; startCountdown.classList.remove('show'); resumeCountdownActive=false;
     clearRoomUrl();
     multiBtn.textContent='MULTIPLAYER';
+    setMultiHint('Create a new room or join using a room code.');
     multiMenu.style.display='grid';
     joinPanel.style.display='none';
     roomPanel.style.display='none';
@@ -1622,7 +1676,9 @@
 
   function openMulti(){
     showFirebaseWarning();
+    setMultiHint('Create a new room or join using a room code.');
     multiBtn.textContent='MULTIPLAYER';
+    setMultiHint('Create a new room or join using a room code.');
     multiMenu.style.display='grid';
     joinPanel.style.display='none';
     roomPanel.style.display='none';
@@ -1639,7 +1695,7 @@
   }
   async function createRoom(){
     if(!firebaseReady){ showFirebaseWarning(); return; }
-    createRoomBtn.disabled=true; lobbyStatus.textContent='Creating room...';
+    createRoomBtn.disabled=true; lobbyStatus.textContent='Creating room...'; setMultiHint('Creating your room. You will be the host.');
     isMultiplayer=true;
     roomId=makeRoomId();
     playerId=makePlayerId();
@@ -1670,6 +1726,7 @@
     }
     joinRoomBtn.disabled=true;
     lobbyStatus.textContent='Checking room...';
+    setMultiHint('Checking the room code...');
 
     const snap = await get(ref(db,'rooms/'+id));
     const room = snap.val();
@@ -1719,6 +1776,9 @@
     roomLink.textContent=link;
     readyBtn.textContent='READY';
     startLocked=false; lobbyStatus.textContent='';
+    setMultiHint(playerSlot==='p1'
+      ? 'You are the host. Share the code/link, wait for player 2, then tap START when both are ready.'
+      : 'You joined the room. Tap READY, then wait for the host to start the match.');
     if(window.startMatchBtn) startMatchBtn.style.display = playerSlot==='p1' ? 'block' : 'none';
   }
 
@@ -1905,8 +1965,8 @@
     if(!roomId || !playerSlot) return;
     if(currentRoom?.status==='starting'){ lobbyStatus.textContent='Game is already starting.'; return; }
     if(currentRoom?.status==='finished'){ lobbyStatus.textContent='Match finished. Return to room first.'; return; }
-    const current = readyBtn.textContent !== 'UNREADY';
-    readyBtn.textContent=current?'UNREADY':'READY';
+    const current = readyBtn.textContent !== 'CANCEL';
+    readyBtn.textContent=current?'CANCEL':'READY';
     await update(ref(db,'rooms/'+roomId+'/players/'+playerSlot),{ready:current});
   }
   function firebaseCountdown(startAt){
