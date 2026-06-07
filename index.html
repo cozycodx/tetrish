@@ -871,7 +871,7 @@
     try{
       audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
       const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-      const f={move:220,rotate:330,hold:260,drop:90,clear:520,perfect:780,count:440,go:660,garbage:120,win:880,lose:150}[type]||300;
+      const f={move:220,rotate:330,hold:260,drop:90,clear:520,perfect:780,count:440,go:660,garbage:120,win:880,lose:150,button:480,tap:620}[type]||300;
       o.frequency.value=f; o.type=(type==='garbage'||type==='lose')?'sawtooth':'square';
       g.gain.setValueAtTime(.035,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.12);
       o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+.13);
@@ -1499,11 +1499,18 @@
   dragRange.oninput=()=>{settings.drag=+dragRange.value;saveSettings();};
   effectsRange.oninput=()=>{settings.effects=+effectsRange.value;saveSettings();};
 
+  document.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      playSound('button');
+    });
+  });
+
 
 
 
   function spawnTapFx(screen,e){
     if(!screen.classList.contains('active')) return;
+    playSound('tap');
     const fx=document.createElement('i');
     fx.className='tapFx';
     fx.style.left=e.clientX+'px';
