@@ -13,7 +13,7 @@
   html,body{height:100%;margin:0;overflow:hidden;background:radial-gradient(circle at 50% 0%,#1b1f46,#080914 55%);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--text);touch-action:none}
   body{display:grid;place-items:center}
   #desktop{display:none;max-width:520px;padding:28px;text-align:center;background:#111429cc;border:1px solid var(--line);border-radius:24px;box-shadow:0 24px 80px #0008}
-  #app{width:100vw;height:100dvh;position:relative;overflow:hidden}
+  #app{width:100vw;height:var(--vh,100dvh);position:relative;overflow:hidden}
 
 
   #toast{
@@ -224,20 +224,20 @@
   #countdown{font-size:38px;font-weight:950;color:#22d3ee;min-height:44px;margin-top:8px}
   #firebaseWarning{display:none;color:#fbbf24;font-size:12px;line-height:1.35;margin:10px 0}
 
-  #gameScreen{width:100%;height:100%;display:none;flex-direction:column;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);gap:8px}
+  #gameScreen{width:100%;height:100%;display:none;flex-direction:column;padding:env(safe-area-inset-top) 12px max(8px,env(safe-area-inset-bottom));gap:8px}
   #gameScreen.active{display:flex}
   header{display:grid;grid-template-columns:1fr auto 54px;align-items:center;gap:8px;min-height:54px}
   .brand{font-weight:900;letter-spacing:.08em;font-size:16px}
   .topStats{display:flex;gap:8px;justify-content:center}.pill{border:1px solid var(--line);background:#111429cc;border-radius:16px;padding:7px 10px;font-size:12px;color:var(--muted)}
   .pill b{display:block;color:var(--text);font-size:16px;line-height:1.1}
-  main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 88px;gap:8px}
-  #boardWrap{position:relative;border:1px solid #293052;border-radius:18px;background:#050711cc;box-shadow:0 14px 40px #0006;overflow:hidden;aspect-ratio:10/20;height:100%;width:auto;max-width:100%;justify-self:center}
+  main{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 88px;gap:8px;overflow:hidden}
+  #boardWrap{position:relative;border:1px solid #293052;border-radius:18px;background:#050711cc;box-shadow:0 14px 40px #0006;overflow:hidden;aspect-ratio:10/20;height:100%;width:auto;max-width:100%;justify-self:center;min-height:0}
   canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
   #gameOverlay{position:absolute;inset:0;display:none;place-items:center;background:#050711aa;backdrop-filter:blur(8px);text-align:center;padding:22px;z-index:5}
   #gameOverlay.active{display:grid}
   #gameOverlay h1{margin:0 0 8px;font-size:30px;letter-spacing:.06em}
   #gameOverlay p{margin:0 0 18px;color:var(--muted);line-height:1.35}
-  aside{display:flex;flex-direction:column;gap:8px;align-self:start}
+  aside{display:flex;flex-direction:column;gap:8px;align-self:start;min-height:0;overflow:hidden}
   .box{border:1px solid var(--line);background:#111429aa;border-radius:16px;padding:7px;text-align:center;min-height:74px}
   .box span{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}
   .mini{width:64px;height:54px;margin:auto}
@@ -360,12 +360,12 @@
   }
 
   @media (max-height: 700px){
-    #gameScreen.multiplayerGame main{grid-template-columns:1fr 88px}
-    #gameScreen.multiplayerGame .nextBox .mini{width:62px;height:38px}
-    #gameScreen.multiplayerGame .holdPreviewBox .mini{width:62px;height:36px}
+    #gameScreen.multiplayerGame main{grid-template-columns:1fr 82px}
+    #gameScreen.multiplayerGame .nextBox .mini{width:62px;height:30px}
+    #gameScreen.multiplayerGame .holdPreviewBox .mini{width:62px;height:30px}
     #gameScreen.multiplayerGame .holdPreviewBox{padding:5px}
     #gameScreen.multiplayerGame .opponentBox{font-size:10px;padding:5px}
-    #gameScreen.multiplayerGame .garbageMeter{min-height:42px;max-height:90px}
+    #gameScreen.multiplayerGame .garbageMeter{min-height:36px;max-height:78px}
   }
   @media (min-width: 760px) and (max-width: 1179px){
     #gameScreen.multiplayerGame main{grid-template-columns:minmax(0,1fr) 102px}
@@ -373,6 +373,30 @@
     #gameScreen.multiplayerGame .holdPreviewBox .mini{width:78px;height:44px}
     #gameScreen.multiplayerGame .garbageMeter{min-height:70px;max-height:150px}
   }
+
+
+  #gameScreen.compactGame{gap:6px}
+  #gameScreen.compactGame header{min-height:46px;grid-template-columns:1fr auto 46px}
+  #gameScreen.compactGame .brand{font-size:15px}
+  #gameScreen.compactGame .topMenuBtn{width:46px;height:46px;border-radius:14px;font-size:24px}
+  #gameScreen.compactGame main{grid-template-columns:minmax(0,1fr) 78px;gap:6px}
+  #gameScreen.compactGame aside{gap:5px}
+  #gameScreen.compactGame .box{border-radius:14px;padding:4px;min-height:auto}
+  #gameScreen.compactGame .box span{font-size:10px;margin-bottom:2px}
+  #gameScreen.compactGame .nextBox{gap:1px}
+  #gameScreen.compactGame .nextBox .mini{width:62px;height:28px}
+  #gameScreen.compactGame .holdPreviewBox .mini{width:62px;height:28px}
+  #gameScreen.compactGame .sideStatsStack{gap:5px}
+  #gameScreen.compactGame .statBox{min-height:44px}
+  #gameScreen.compactGame .statBox b{font-size:17px}
+  #gameScreen.compactGame #sideTimer,
+  #gameScreen.compactGame #sprintBest{font-size:13px;letter-spacing:-.08em}
+  #gameScreen.compactGame .statBox small{font-size:9px}
+  #gameScreen.compactGame .ctrl{height:48px;border-radius:16px}
+  #gameScreen.compactGame #controls{padding-bottom:2px}
+  #gameScreen.compactGame.multiplayerGame main{grid-template-columns:minmax(0,1fr) 82px}
+  #gameScreen.compactGame .opponentBox{font-size:10px;padding:4px}
+  #gameScreen.compactGame .garbageMeter{min-height:34px;max-height:72px}
 
   #boardWrap.shake{animation:shake .14s linear 1}
   @keyframes shake{25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
@@ -399,8 +423,8 @@
 
   @media (max-height: 700px){
     .heroTitle{font-size:46px}.panel{padding:18px 16px}.hint{margin-top:10px}
-    #gameScreen{gap:6px}header{min-height:48px;grid-template-columns:1fr auto 48px}.topMenuBtn{width:48px;height:48px}.ctrl{height:52px}#controls{padding-bottom:4px}
-    aside{gap:6px}.sideStatsStack{gap:6px}.statBox{min-height:48px}.statBox b{font-size:18px}#sideTimer,#sprintBest{font-size:14px}.box{min-height:64px;padding:5px}.nextBox{min-height:auto;height:auto}.mini{width:64px;height:44px}.nextBox .mini{width:64px;height:42px}
+    #gameScreen{gap:6px}header{min-height:46px;grid-template-columns:1fr auto 46px}.topMenuBtn{width:46px;height:46px}.ctrl{height:48px}#controls{padding-bottom:2px}
+    aside{gap:5px}.sideStatsStack{gap:5px}.statBox{min-height:44px}.statBox b{font-size:17px}#sideTimer,#sprintBest{font-size:13px}.box{min-height:auto;padding:4px}.nextBox{min-height:auto;height:auto}.mini{width:62px;height:38px}.nextBox .mini{width:62px;height:30px}.holdPreviewBox .mini{width:62px;height:30px}
   }
   @media (min-width: 1180px) and (hover:hover) and (pointer:fine){
     #app{display:none}#desktop{display:block}
@@ -642,7 +666,7 @@
     [menuScreen,multiScreen,gameScreen].forEach(s=>s.classList.remove('active'));
     screen.classList.add('active');
     if(screen!==gameScreen){ gameScreen.classList.remove('multiplayerGame'); startCountdown.classList.remove('show'); }
-    setTimeout(resize,50);
+    setTimeout(()=>{ updateViewportVars(); resize(); },50);
   }
 
   function getName(){
@@ -670,6 +694,21 @@
     draw();
   }
   addEventListener('resize',resize);
+
+
+  function updateViewportVars(){
+    const vv = window.visualViewport;
+    const h = vv ? vv.height : window.innerHeight;
+    document.documentElement.style.setProperty('--vh', h + 'px');
+    gameScreen.classList.toggle('compactGame', h < 740);
+    setTimeout(resize, 30);
+  }
+  updateViewportVars();
+  window.visualViewport?.addEventListener('resize', updateViewportVars);
+  window.visualViewport?.addEventListener('scroll', updateViewportVars);
+  window.addEventListener('orientationchange', () => setTimeout(updateViewportVars, 250));
+  window.addEventListener('resize', updateViewportVars);
+
 
 
 
